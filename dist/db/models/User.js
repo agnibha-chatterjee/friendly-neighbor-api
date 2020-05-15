@@ -29,5 +29,17 @@ var UserSchema = new mongoose_1.Schema({
         type: String,
         trim: true,
     },
+    contactNumber: {
+        type: String,
+        trim: true,
+    },
+    address: {
+        address_1: { type: String, trim: true },
+        address_2: { type: String, trim: true },
+        city: { type: String, trim: true },
+        state: { type: String, trim: true },
+        country: { type: String, trim: true },
+        pincode: { type: Number },
+    },
 });
 exports.default = mongoose_1.model('user', UserSchema);

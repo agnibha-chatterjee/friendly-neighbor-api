@@ -8,8 +8,7 @@
         "mongoose": "^5.9.13"
     },
     "scripts": {
-        "start": "node dist/app.js",
-        "dev:tsc": "tsc -w",
+        "dev:typescript": "npx tsc -w",
         "dev:server": "nodemon dist/app.js",
         "dev": "concurrently npm:dev:*"
     },
@@ -21,6 +20,7 @@
         "@types/node": "^13.13.5",
         "concurrently": "^5.2.0",
         "morgan": "^1.10.0",
-        "nodemon": "^2.0.3"
+        "nodemon": "^2.0.3",
+        "typescript": "^3.9.2"
     }
 }
