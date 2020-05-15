@@ -7,6 +7,16 @@ export interface User extends Document {
     email: string;
     googleId: string;
     profilePicture: string;
+    contactNumber: string;
+    address: {
+        address1: string;
+        address2: string;
+        city: string;
+        state: string;
+        country: string;
+        pincode: number;
+    };
+    cloudinaryPublicId: string;
 }
 
 export interface CustomRequest<T, S> extends Request {

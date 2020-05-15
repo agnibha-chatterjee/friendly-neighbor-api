@@ -41,5 +41,9 @@ var UserSchema = new mongoose_1.Schema({
         country: { type: String, trim: true },
         pincode: { type: Number },
     },
+    cloudinaryPublicId: {
+        type: String,
+        trim: true,
+    },
 });
 exports.default = mongoose_1.model('user', UserSchema);

@@ -2,12 +2,17 @@ import { Request, Response } from 'express';
 import User from '../db/models/User';
 import { CustomRequest } from '../types/types';
 import { OAuth2Client } from 'google-auth-library';
+import { uploader } from '../utils/cloudinaryConfig';
+import { resolve } from 'path';
+import { unlinkSync } from 'fs';
+import { compressImage } from '../utils/compressImage';
+import { deleteProfilePhotos } from '../utils/deteleProfilePhotos';
 
-interface loginOrSignUpData {
+interface LoginOrSignUpData {
     idToken: string;
 }
 
-interface registerUserData {
+interface RegisterUserData {
     id: string;
     contactNumber: string;
     address1: string;
@@ -21,7 +26,7 @@ interface registerUserData {
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 export const loginOrSignUp = async (
-    req: CustomRequest<loginOrSignUpData, {}>,
+    req: CustomRequest<LoginOrSignUpData, {}>,
     res: Response
 ) => {
     const { idToken } = req.body;
@@ -46,7 +51,7 @@ export const loginOrSignUp = async (
 };
 
 export const registerUser = async (
-    req: CustomRequest<registerUserData, {}>,
+    req: CustomRequest<RegisterUserData, {}>,
     res: Response
 ) => {
     const {
@@ -64,6 +69,34 @@ export const registerUser = async (
         $set: { address, contactNumber },
     });
     res.status(201).send(registeredUser);
+};
+
+export const updateProfilePhoto = async (req: Request, res: Response) => {
+    const { userId } = req.params;
+    const checkIfProfilePhotoExists = await User.findById(userId);
+    if (checkIfProfilePhotoExists?.cloudinaryPublicId) {
+        await uploader.destroy(checkIfProfilePhotoExists?.cloudinaryPublicId);
+    }
+    const img = await compressImage(userId, req.file);
+    if (img) {
+        uploader.upload(
+            resolve(
+                __dirname,
+                `../../uploads/${userId}-${req.file.originalname}.jpeg`
+            ),
+            async (error, result) => {
+                if (error) return res.send(error);
+                res.send({ url: result?.secure_url });
+                await User.findByIdAndUpdate(userId, {
+                    $set: {
+                        profilePicture: result?.secure_url,
+                        cloudinaryPublicId: result?.public_id,
+                    },
+                });
+                deleteProfilePhotos(userId, req.file);
+            }
+        );
+    }
 };
 
 export const postUserCoordinates = async (req: Request, res: Response) => {

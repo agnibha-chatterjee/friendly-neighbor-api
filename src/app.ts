@@ -7,10 +7,12 @@ import morgan from 'morgan';
 import connectDB from './db/connectDB';
 import errorHandler from './middlewares/errorHandler';
 import userRouter from './routes/userRoutes';
+import { initializeCloudinary } from './utils/cloudinaryConfig';
 
 const app = express();
 
 connectDB();
+initializeCloudinary();
 
 if (process.env.NODE_ENV === 'development') {
     app.use(morgan('tiny'));

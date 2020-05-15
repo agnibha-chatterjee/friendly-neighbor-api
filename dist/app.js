@@ -12,8 +12,10 @@ var morgan_1 = __importDefault(require("morgan"));
 var connectDB_1 = __importDefault(require("./db/connectDB"));
 var errorHandler_1 = __importDefault(require("./middlewares/errorHandler"));
 var userRoutes_1 = __importDefault(require("./routes/userRoutes"));
+var cloudinaryConfig_1 = require("./utils/cloudinaryConfig");
 var app = express_1.default();
 connectDB_1.default();
+cloudinaryConfig_1.initializeCloudinary();
 if (process.env.NODE_ENV === 'development') {
     app.use(morgan_1.default('tiny'));
 }

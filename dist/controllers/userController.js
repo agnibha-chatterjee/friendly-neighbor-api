@@ -39,9 +39,13 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.postUserCoordinates = exports.registerUser = exports.loginOrSignUp = void 0;
+exports.postUserCoordinates = exports.updateProfilePhoto = exports.registerUser = exports.loginOrSignUp = void 0;
 var User_1 = __importDefault(require("../db/models/User"));
 var google_auth_library_1 = require("google-auth-library");
+var cloudinaryConfig_1 = require("../utils/cloudinaryConfig");
+var path_1 = require("path");
+var compressImage_1 = require("../utils/compressImage");
+var deteleProfilePhotos_1 = require("../utils/deteleProfilePhotos");
 var client = new google_auth_library_1.OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 exports.loginOrSignUp = function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
     var idToken, ticket, payload, email, name_1, picture, sub, newUser, existingUser, user;
@@ -91,6 +95,49 @@ exports.registerUser = function (req, res) { return __awaiter(void 0, void 0, vo
             case 1:
                 registeredUser = _b.sent();
                 res.status(201).send(registeredUser);
+                return [2 /*return*/];
+        }
+    });
+}); };
+exports.updateProfilePhoto = function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
+    var userId, checkIfProfilePhotoExists, img;
+    return __generator(this, function (_a) {
+        switch (_a.label) {
+            case 0:
+                userId = req.params.userId;
+                return [4 /*yield*/, User_1.default.findById(userId)];
+            case 1:
+                checkIfProfilePhotoExists = _a.sent();
+                if (!(checkIfProfilePhotoExists === null || checkIfProfilePhotoExists === void 0 ? void 0 : checkIfProfilePhotoExists.cloudinaryPublicId)) return [3 /*break*/, 3];
+                return [4 /*yield*/, cloudinaryConfig_1.uploader.destroy(checkIfProfilePhotoExists === null || checkIfProfilePhotoExists === void 0 ? void 0 : checkIfProfilePhotoExists.cloudinaryPublicId)];
+            case 2:
+                _a.sent();
+                _a.label = 3;
+            case 3: return [4 /*yield*/, compressImage_1.compressImage(userId, req.file)];
+            case 4:
+                img = _a.sent();
+                if (img) {
+                    cloudinaryConfig_1.uploader.upload(path_1.resolve(__dirname, "../../uploads/" + userId + "-" + req.file.originalname + ".jpeg"), function (error, result) { return __awaiter(void 0, void 0, void 0, function () {
+                        return __generator(this, function (_a) {
+                            switch (_a.label) {
+                                case 0:
+                                    if (error)
+                                        return [2 /*return*/, res.send(error)];
+                                    res.send({ url: result === null || result === void 0 ? void 0 : result.secure_url });
+                                    return [4 /*yield*/, User_1.default.findByIdAndUpdate(userId, {
+                                            $set: {
+                                                profilePicture: result === null || result === void 0 ? void 0 : result.secure_url,
+                                                cloudinaryPublicId: result === null || result === void 0 ? void 0 : result.public_id,
+                                            },
+                                        })];
+                                case 1:
+                                    _a.sent();
+                                    deteleProfilePhotos_1.deleteProfilePhotos(userId, req.file);
+                                    return [2 /*return*/];
+                            }
+                        });
+                    }); });
+                }
                 return [2 /*return*/];
         }
     });

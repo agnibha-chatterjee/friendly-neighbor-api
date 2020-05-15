@@ -41,6 +41,10 @@ const UserSchema = new Schema({
         country: { type: String, trim: true },
         pincode: { type: Number },
     },
+    cloudinaryPublicId: {
+        type: String,
+        trim: true,
+    },
 });
 
 export default model<User>('user', UserSchema);
