@@ -45,16 +45,22 @@ var uploadRequestImages_1 = require("../utils/uploadRequestImages");
 var Request_1 = __importDefault(require("../db/models/Request"));
 var detelePhotos_1 = require("../utils/detelePhotos");
 exports.createRequest = function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
-    var newRequest;
+    var files, data, newRequest;
     return __generator(this, function (_a) {
         switch (_a.label) {
-            case 0: return [4, Request_1.default.create(JSON.parse(req.body.data))];
+            case 0:
+                files = [];
+                data = JSON.parse(req.body);
+                return [4, Request_1.default.create(data)];
             case 1:
                 newRequest = _a.sent();
                 if (!newRequest._id) return [3, 4];
                 res.status(201).send(newRequest);
-                if (!req.files.length) return [3, 3];
-                return [4, uploadRequestImages_1.uploadRequestImages(req.files, newRequest._id)];
+                if (!req.files) return [3, 3];
+                files = Object.keys(req.files).map(function (fieldname) {
+                    return req.files[fieldname][0];
+                });
+                return [4, uploadRequestImages_1.uploadRequestImages(files, newRequest._id)];
             case 2:
                 _a.sent();
                 detelePhotos_1.deletePhotos(path_1.resolve(__dirname, "../../uploads/"));

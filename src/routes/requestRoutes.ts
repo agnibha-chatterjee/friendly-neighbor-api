@@ -5,8 +5,13 @@ import { upload } from '../utils/multerConfig';
 
 const requestRouter = Router();
 
-requestRouter
-    .route('/')
-    .post(upload.array('images', 3), asyncHandler(createRequest));
+requestRouter.route('/').post(
+    upload.fields([
+        { name: 'image1', maxCount: 1 },
+        { name: 'image2', maxCount: 1 },
+        { name: 'image3', maxCount: 1 },
+    ]),
+    asyncHandler(createRequest)
+);
 
 export default requestRouter;
