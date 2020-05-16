@@ -39,22 +39,31 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.compressImage = void 0;
-var sharp_1 = __importDefault(require("sharp"));
+exports.createRequest = void 0;
 var path_1 = require("path");
-exports.compressImage = function (userId, file) { return __awaiter(void 0, void 0, void 0, function () {
-    var img;
+var uploadRequestImages_1 = require("../utils/uploadRequestImages");
+var Request_1 = __importDefault(require("../db/models/Request"));
+var detelePhotos_1 = require("../utils/detelePhotos");
+exports.createRequest = function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
+    var newRequest;
     return __generator(this, function (_a) {
-        img = sharp_1.default(path_1.resolve(__dirname, "../../uploads/" + userId + "-" + file.originalname))
-            .toFormat('jpeg')
-            .jpeg({
-            quality: 70,
-            overshootDeringing: true,
-            progressive: true,
-            optimizeCoding: true,
-            force: true,
-        })
-            .toFile(path_1.resolve(__dirname, "../../uploads/" + userId + "-" + file.originalname + ".jpeg"));
-        return [2, img];
+        switch (_a.label) {
+            case 0: return [4, Request_1.default.create(JSON.parse(req.body.data))];
+            case 1:
+                newRequest = _a.sent();
+                if (!newRequest._id) return [3, 4];
+                res.status(201).send(newRequest);
+                if (!req.files.length) return [3, 3];
+                return [4, uploadRequestImages_1.uploadRequestImages(req.files, newRequest._id)];
+            case 2:
+                _a.sent();
+                detelePhotos_1.deletePhotos(path_1.resolve(__dirname, "../../uploads/"));
+                _a.label = 3;
+            case 3: return [3, 5];
+            case 4:
+                res.status(500).send({ error: 'error creating request' });
+                _a.label = 5;
+            case 5: return [2];
+        }
     });
 }); };

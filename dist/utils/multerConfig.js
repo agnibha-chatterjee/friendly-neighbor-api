@@ -10,7 +10,8 @@ var storage = multer_1.default.diskStorage({
         cb(null, 'uploads');
     },
     filename: function (req, file, cb) {
-        cb(null, req.params.userId + "-" + file.originalname);
+        var userId = req.params.userId;
+        cb(null, userId ? userId + "-" + file.originalname : file.originalname);
     },
 });
 exports.upload = multer_1.default({

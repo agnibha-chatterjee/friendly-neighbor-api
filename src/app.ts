@@ -5,9 +5,10 @@ import express from 'express';
 import bodyParser from 'body-parser';
 import morgan from 'morgan';
 import connectDB from './db/connectDB';
+import { initializeCloudinary } from './utils/cloudinaryConfig';
 import errorHandler from './middlewares/errorHandler';
 import userRouter from './routes/userRoutes';
-import { initializeCloudinary } from './utils/cloudinaryConfig';
+import requestRouter from './routes/requestRoutes';
 
 const app = express();
 
@@ -23,6 +24,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 
 // Routes
 app.use('/api/users', userRouter);
+app.use('/api/requests', requestRouter);
 
 // Error middleware
 app.use(errorHandler);

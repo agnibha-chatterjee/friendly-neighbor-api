@@ -46,7 +46,7 @@ var authenticateUser = function (req, res, next) { return __awaiter(void 0, void
         switch (_a.label) {
             case 0:
                 userId = req.headers._id;
-                return [4 /*yield*/, User_1.default.findById(userId)];
+                return [4, User_1.default.findById(userId)];
             case 1:
                 user = _a.sent();
                 if (user) {
@@ -58,7 +58,7 @@ var authenticateUser = function (req, res, next) { return __awaiter(void 0, void
                         error: 'you need to be authenticated in order to access this endpoint',
                     });
                 }
-                return [2 /*return*/];
+                return [2];
         }
     });
 }); };

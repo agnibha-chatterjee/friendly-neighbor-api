@@ -19,6 +19,18 @@ export interface User extends Document {
     cloudinaryPublicId: string;
 }
 
+export interface RequestType extends Document {
+    requestedBy: string;
+    title: string;
+    description: string;
+    expiration: Date | string;
+    createdAt: Date | string;
+    contactNumber: string;
+    searchRadius: number;
+    completed: boolean;
+    images: Array<{ imageURL: string; photoNumber: number }>;
+}
+
 export interface CustomRequest<T, S> extends Request {
     body: T;
     headers: S & IncomingHttpHeaders;

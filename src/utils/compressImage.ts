@@ -10,7 +10,7 @@ export const compressImage = async (
     )
         .toFormat('jpeg')
         .jpeg({
-            quality: 80,
+            quality: 70,
             overshootDeringing: true,
             progressive: true,
             optimizeCoding: true,

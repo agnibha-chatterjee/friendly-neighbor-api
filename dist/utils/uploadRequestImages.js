@@ -35,26 +35,66 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
     }
 };
+var __read = (this && this.__read) || function (o, n) {
+    var m = typeof Symbol === "function" && o[Symbol.iterator];
+    if (!m) return o;
+    var i = m.call(o), r, ar = [], e;
+    try {
+        while ((n === void 0 || n-- > 0) && !(r = i.next()).done) ar.push(r.value);
+    }
+    catch (error) { e = { error: error }; }
+    finally {
+        try {
+            if (r && !r.done && (m = i["return"])) m.call(i);
+        }
+        finally { if (e) throw e.error; }
+    }
+    return ar;
+};
+var __spread = (this && this.__spread) || function () {
+    for (var ar = [], i = 0; i < arguments.length; i++) ar = ar.concat(__read(arguments[i]));
+    return ar;
+};
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.compressImage = void 0;
-var sharp_1 = __importDefault(require("sharp"));
+exports.uploadRequestImages = void 0;
+var cloudinaryConfig_1 = require("./cloudinaryConfig");
 var path_1 = require("path");
-exports.compressImage = function (userId, file) { return __awaiter(void 0, void 0, void 0, function () {
-    var img;
-    return __generator(this, function (_a) {
-        img = sharp_1.default(path_1.resolve(__dirname, "../../uploads/" + userId + "-" + file.originalname))
-            .toFormat('jpeg')
-            .jpeg({
-            quality: 70,
-            overshootDeringing: true,
-            progressive: true,
-            optimizeCoding: true,
-            force: true,
-        })
-            .toFile(path_1.resolve(__dirname, "../../uploads/" + userId + "-" + file.originalname + ".jpeg"));
-        return [2, img];
+var Request_1 = __importDefault(require("../db/models/Request"));
+exports.uploadRequestImages = function (images, reqId) {
+    var photos = [];
+    return new Promise(function (resolve, reject) {
+        images.map(function (image, index) { return __awaiter(void 0, void 0, void 0, function () {
+            var i;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0: return [4, cloudinaryConfig_1.uploader.upload(path_1.resolve(__dirname, "../../uploads/" + image.originalname), {
+                            resource_type: 'image',
+                            public_id: "requests/" + reqId + "/photo-" + (index + 1),
+                            overwrite: true,
+                        })];
+                    case 1:
+                        i = _a.sent();
+                        if (i.secure_url) {
+                            photos = __spread(photos, [
+                                { imageURL: i.secure_url, photoNumber: index + 1 },
+                            ]);
+                            if (photos.length === images.length) {
+                                Request_1.default.findByIdAndUpdate(reqId, {
+                                    $set: { images: photos },
+                                }).exec();
+                                resolve('done');
+                                return [2];
+                            }
+                        }
+                        else {
+                            reject('Error uploading photos');
+                        }
+                        return [2];
+                }
+            });
+        }); });
     });
-}); };
+};

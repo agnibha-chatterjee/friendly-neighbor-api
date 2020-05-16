@@ -45,7 +45,7 @@ var google_auth_library_1 = require("google-auth-library");
 var cloudinaryConfig_1 = require("../utils/cloudinaryConfig");
 var path_1 = require("path");
 var compressImage_1 = require("../utils/compressImage");
-var deteleProfilePhotos_1 = require("../utils/deteleProfilePhotos");
+var detelePhotos_1 = require("../utils/detelePhotos");
 var client = new google_auth_library_1.OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 exports.loginOrSignUp = function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
     var idToken, ticket, payload, email, name_1, picture, sub, newUser, existingUser, user;
@@ -53,32 +53,32 @@ exports.loginOrSignUp = function (req, res) { return __awaiter(void 0, void 0, v
         switch (_a.label) {
             case 0:
                 idToken = req.body.idToken;
-                return [4 /*yield*/, client.verifyIdToken({
+                return [4, client.verifyIdToken({
                         idToken: idToken,
                         audience: process.env.GOOGLE_CLIENT_ID,
                     })];
             case 1:
                 ticket = _a.sent();
                 payload = ticket.getPayload();
-                if (!(payload !== undefined)) return [3 /*break*/, 6];
+                if (!(payload !== undefined)) return [3, 6];
                 email = payload.email, name_1 = payload.name, picture = payload.picture, sub = payload.sub;
                 newUser = { email: email, name: name_1, profilePicture: picture, googleId: sub };
-                return [4 /*yield*/, User_1.default.findOne({ email: email })];
+                return [4, User_1.default.findOne({ email: email })];
             case 2:
                 existingUser = _a.sent();
-                if (!existingUser) return [3 /*break*/, 3];
+                if (!existingUser) return [3, 3];
                 res.status(200).send({ newUser: false, user: existingUser });
-                return [3 /*break*/, 5];
-            case 3: return [4 /*yield*/, User_1.default.create(newUser)];
+                return [3, 5];
+            case 3: return [4, User_1.default.create(newUser)];
             case 4:
                 user = _a.sent();
                 res.status(201).send({ newUser: true, user: user });
                 _a.label = 5;
-            case 5: return [3 /*break*/, 7];
+            case 5: return [3, 7];
             case 6:
                 res.status(406).send({ error: 'invalid token' });
                 _a.label = 7;
-            case 7: return [2 /*return*/];
+            case 7: return [2];
         }
     });
 }); };
@@ -89,56 +89,50 @@ exports.registerUser = function (req, res) { return __awaiter(void 0, void 0, vo
             case 0:
                 _a = req.body, contactNumber = _a.contactNumber, address1 = _a.address1, address2 = _a.address2, city = _a.city, country = _a.country, pincode = _a.pincode, state = _a.state, id = _a.id;
                 address = { address1: address1, address2: address2, city: city, country: country, pincode: pincode, state: state };
-                return [4 /*yield*/, User_1.default.findByIdAndUpdate(id, {
+                return [4, User_1.default.findByIdAndUpdate(id, {
                         $set: { address: address, contactNumber: contactNumber },
                     })];
             case 1:
                 registeredUser = _b.sent();
                 res.status(201).send(registeredUser);
-                return [2 /*return*/];
+                return [2];
         }
     });
 }); };
 exports.updateProfilePhoto = function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
-    var userId, checkIfProfilePhotoExists, img;
+    var userId;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
                 userId = req.params.userId;
-                return [4 /*yield*/, User_1.default.findById(userId)];
+                return [4, compressImage_1.compressImage(userId, req.file)];
             case 1:
-                checkIfProfilePhotoExists = _a.sent();
-                if (!(checkIfProfilePhotoExists === null || checkIfProfilePhotoExists === void 0 ? void 0 : checkIfProfilePhotoExists.cloudinaryPublicId)) return [3 /*break*/, 3];
-                return [4 /*yield*/, cloudinaryConfig_1.uploader.destroy(checkIfProfilePhotoExists === null || checkIfProfilePhotoExists === void 0 ? void 0 : checkIfProfilePhotoExists.cloudinaryPublicId)];
-            case 2:
                 _a.sent();
-                _a.label = 3;
-            case 3: return [4 /*yield*/, compressImage_1.compressImage(userId, req.file)];
-            case 4:
-                img = _a.sent();
-                if (img) {
-                    cloudinaryConfig_1.uploader.upload(path_1.resolve(__dirname, "../../uploads/" + userId + "-" + req.file.originalname + ".jpeg"), function (error, result) { return __awaiter(void 0, void 0, void 0, function () {
-                        return __generator(this, function (_a) {
-                            switch (_a.label) {
-                                case 0:
-                                    if (error)
-                                        return [2 /*return*/, res.send(error)];
-                                    res.send({ url: result === null || result === void 0 ? void 0 : result.secure_url });
-                                    return [4 /*yield*/, User_1.default.findByIdAndUpdate(userId, {
-                                            $set: {
-                                                profilePicture: result === null || result === void 0 ? void 0 : result.secure_url,
-                                                cloudinaryPublicId: result === null || result === void 0 ? void 0 : result.public_id,
-                                            },
-                                        })];
-                                case 1:
-                                    _a.sent();
-                                    deteleProfilePhotos_1.deleteProfilePhotos(userId, req.file);
-                                    return [2 /*return*/];
-                            }
-                        });
-                    }); });
-                }
-                return [2 /*return*/];
+                cloudinaryConfig_1.uploader.upload(path_1.resolve(__dirname, "../../uploads/" + userId + "-" + req.file.originalname + ".jpeg"), {
+                    resource_type: 'image',
+                    public_id: "profilePhotos/" + userId,
+                    overwrite: true,
+                }, function (error, result) { return __awaiter(void 0, void 0, void 0, function () {
+                    return __generator(this, function (_a) {
+                        switch (_a.label) {
+                            case 0:
+                                if (error)
+                                    return [2, res.send(error)];
+                                res.status(200).send({ imageURL: result === null || result === void 0 ? void 0 : result.secure_url });
+                                return [4, User_1.default.findByIdAndUpdate(userId, {
+                                        $set: {
+                                            profilePicture: result === null || result === void 0 ? void 0 : result.secure_url,
+                                            cloudinaryPublicId: result === null || result === void 0 ? void 0 : result.public_id,
+                                        },
+                                    })];
+                            case 1:
+                                _a.sent();
+                                detelePhotos_1.deletePhotos(path_1.resolve(__dirname, "../../uploads/"));
+                                return [2];
+                        }
+                    });
+                }); });
+                return [2];
         }
     });
 }); };
@@ -146,6 +140,6 @@ exports.postUserCoordinates = function (req, res) { return __awaiter(void 0, voi
     return __generator(this, function (_a) {
         console.log(req.body);
         res.status(200).send(req.body);
-        return [2 /*return*/];
+        return [2];
     });
 }); };

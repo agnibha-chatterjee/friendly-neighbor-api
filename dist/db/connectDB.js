@@ -44,7 +44,7 @@ mongoose_1.default.Promise = global.Promise;
 var connectDB = function () { return __awaiter(void 0, void 0, void 0, function () {
     return __generator(this, function (_a) {
         switch (_a.label) {
-            case 0: return [4 /*yield*/, mongoose_1.default.connect(process.env.MONGO_URI, {
+            case 0: return [4, mongoose_1.default.connect(process.env.MONGO_URI, {
                     useNewUrlParser: true,
                     useCreateIndex: true,
                     useFindAndModify: false,
@@ -53,7 +53,7 @@ var connectDB = function () { return __awaiter(void 0, void 0, void 0, function 
             case 1:
                 _a.sent();
                 console.log('Connected to DB');
-                return [2 /*return*/];
+                return [2];
         }
     });
 }); };

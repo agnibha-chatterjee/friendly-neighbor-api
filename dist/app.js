@@ -10,9 +10,10 @@ var express_1 = __importDefault(require("express"));
 var body_parser_1 = __importDefault(require("body-parser"));
 var morgan_1 = __importDefault(require("morgan"));
 var connectDB_1 = __importDefault(require("./db/connectDB"));
+var cloudinaryConfig_1 = require("./utils/cloudinaryConfig");
 var errorHandler_1 = __importDefault(require("./middlewares/errorHandler"));
 var userRoutes_1 = __importDefault(require("./routes/userRoutes"));
-var cloudinaryConfig_1 = require("./utils/cloudinaryConfig");
+var requestRoutes_1 = __importDefault(require("./routes/requestRoutes"));
 var app = express_1.default();
 connectDB_1.default();
 cloudinaryConfig_1.initializeCloudinary();
@@ -21,9 +22,8 @@ if (process.env.NODE_ENV === 'development') {
 }
 app.use(body_parser_1.default.json());
 app.use(body_parser_1.default.urlencoded({ extended: true }));
-// Routes
 app.use('/api/users', userRoutes_1.default);
-// Error middleware
+app.use('/api/requests', requestRoutes_1.default);
 app.use(errorHandler_1.default);
 var PORT = process.env.PORT || 5000;
 var server = app.listen(PORT, function () {
