@@ -13,9 +13,10 @@
         "sharp": "^0.25.2"
     },
     "scripts": {
-        "dev:typescript": "npx tsc -w",
+        "dev:typescript": "tsc -w",
         "dev:server": "nodemon dist/app.js",
-        "dev": "concurrently npm:dev:*"
+        "dev": "concurrently npm:dev:*",
+        "start": "node dist/app.js"
     },
     "devDependencies": {
         "@types/body-parser": "^1.19.0",

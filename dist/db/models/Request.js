@@ -43,13 +43,18 @@ var RequestSchema = new mongoose_1.Schema({
         unique: true,
         default: crypto_1.randomBytes(4).toString('hex'),
     },
-    lat: {
-        type: Number,
-        required: [true, 'location is required'],
+    location: {
+        latitude: {
+            type: Number,
+            required: [true, 'location is required'],
+        },
+        longitude: {
+            type: Number,
+            required: [true, 'location is required'],
+        },
     },
-    lng: {
+    cost: {
         type: Number,
-        required: [true, 'location is required'],
     },
     images: [
         {

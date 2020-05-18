@@ -30,6 +30,11 @@ export interface RequestType extends Document {
     searchRadius: number;
     completed: boolean;
     images: Array<{ imageURL: string; photoNumber: number }>;
+    location: {
+        latitude: string;
+        longitude: string;
+    };
+    cost: number;
 }
 
 export interface CustomRequest<T, S> extends Request {

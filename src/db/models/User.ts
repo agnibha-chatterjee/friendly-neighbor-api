@@ -45,6 +45,16 @@ const UserSchema = new Schema({
         type: String,
         trim: true,
     },
+    defaultLocation: {
+        latitude: {
+            type: Number,
+            required: [true, 'location is required'],
+        },
+        longitude: {
+            type: Number,
+            required: [true, 'location is required'],
+        },
+    },
 });
 
 export default model<User>('user', UserSchema);

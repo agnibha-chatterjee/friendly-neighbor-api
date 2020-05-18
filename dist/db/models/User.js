@@ -45,5 +45,15 @@ var UserSchema = new mongoose_1.Schema({
         type: String,
         trim: true,
     },
+    defaultLocation: {
+        latitude: {
+            type: Number,
+            required: [true, 'location is required'],
+        },
+        longitude: {
+            type: Number,
+            required: [true, 'location is required'],
+        },
+    },
 });
 exports.default = mongoose_1.model('user', UserSchema);
