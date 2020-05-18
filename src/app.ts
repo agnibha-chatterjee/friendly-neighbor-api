@@ -16,7 +16,11 @@ connectDB();
 initializeCloudinary();
 
 if (process.env.NODE_ENV === 'development') {
-    app.use(morgan('tiny'));
+    app.use(
+        morgan(
+            ':remote-addr - :remote-user [:date[clf]] ":method :url HTTP/:http-version" :status :res[content-length]'
+        )
+    );
 }
 
 app.use(bodyParser.json());

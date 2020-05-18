@@ -29,33 +29,36 @@ export const getFilteredRequests = async (req: Req, res: Response) => {
 };
 
 export const createRequest = async (req: Req, res: Response) => {
-    // const location = { latitude: 28.38, longitude: 77.12 };
-    // const radius = 1;
-    // const postId = 'bd242777';
-    // client.forwardRequestNearbyDefaultLocation(
-    //     { userId, location, radius, postId },
-    //     (err: any, data: any) => {
-    //         if (err) throw err;
-    //         console.log(data);
-    //         res.json(data);
+    console.log(req.body);
+    console.log(JSON.parse(req.body.data));
+    // // const location = { latitude: 28.38, longitude: 77.12 };
+    // // const radius = 1;
+    // // const postId = 'bd242777';
+    // // client.forwardRequestNearbyDefaultLocation(
+    // //     { userId, location, radius, postId },
+    // //     (err: any, data: any) => {
+    // //         if (err) throw err;
+    // //         console.log(data);
+    // //         res.json(data);
+    // //     }
+    // // );
+    // let files: Express.Multer.File[] = [];
+    // const data = JSON.parse(req.body.data);
+    // const newRequest = await Request.create(data);
+    // if (newRequest._id) {
+    //     res.status(201).send(newRequest);
+    //     if (req.files) {
+    //         files = Object.keys(req.files).map((fieldname: string) => {
+    //             // @ts-ignore
+    //             return req.files[fieldname][0];
+    //         });
+    //         await uploadRequestImages(files, newRequest._id);
+    //         deletePhotos(resolve(__dirname, `../../uploads/`));
     //     }
-    // );
-    let files: Express.Multer.File[] = [];
-    const data = JSON.parse(req.body.data);
-    const newRequest = await Request.create(data);
-    if (newRequest._id) {
-        res.status(201).send(newRequest);
-        if (req.files) {
-            files = Object.keys(req.files).map((fieldname: string) => {
-                // @ts-ignore
-                return req.files[fieldname][0];
-            });
-            await uploadRequestImages(files, newRequest._id);
-            deletePhotos(resolve(__dirname, `../../uploads/`));
-        }
-    } else {
-        res.status(500).send({ error: 'error creating request' });
-    }
+    // } else {
+    //     res.status(500).send({ error: 'error creating request' });
+    // }
+    res.json({ hi: 'testing' });
 };
 
 export const deleteRequest = async (req: Req, res: Response) => {

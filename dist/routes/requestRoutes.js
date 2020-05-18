@@ -15,7 +15,7 @@ requestRouter
 requestRouter
     .route('/history/:userId')
     .get(authenticateUser_1.default, express_async_handler_1.default(requestController_1.getRequestHistory));
-requestRouter.route('/').post(multerConfig_1.upload.fields([
+requestRouter.route('/').post(authenticateUser_1.default, multerConfig_1.upload.fields([
     { name: 'image1', maxCount: 1 },
     { name: 'image2', maxCount: 1 },
     { name: 'image3', maxCount: 1 },

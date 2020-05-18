@@ -40,10 +40,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getRequestHistory = exports.deleteRequest = exports.createRequest = exports.getFilteredRequests = void 0;
-var path_1 = require("path");
-var uploadRequestImages_1 = require("../utils/uploadRequestImages");
 var Request_1 = __importDefault(require("../db/models/Request"));
-var detelePhotos_1 = require("../utils/detelePhotos");
 var grpc_client_1 = require("../grpc/grpc-client");
 exports.getFilteredRequests = function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
     var userId;
@@ -78,32 +75,11 @@ exports.getFilteredRequests = function (req, res) { return __awaiter(void 0, voi
     });
 }); };
 exports.createRequest = function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
-    var files, data, newRequest;
     return __generator(this, function (_a) {
-        switch (_a.label) {
-            case 0:
-                files = [];
-                data = JSON.parse(req.body.data);
-                return [4, Request_1.default.create(data)];
-            case 1:
-                newRequest = _a.sent();
-                if (!newRequest._id) return [3, 4];
-                res.status(201).send(newRequest);
-                if (!req.files) return [3, 3];
-                files = Object.keys(req.files).map(function (fieldname) {
-                    return req.files[fieldname][0];
-                });
-                return [4, uploadRequestImages_1.uploadRequestImages(files, newRequest._id)];
-            case 2:
-                _a.sent();
-                detelePhotos_1.deletePhotos(path_1.resolve(__dirname, "../../uploads/"));
-                _a.label = 3;
-            case 3: return [3, 5];
-            case 4:
-                res.status(500).send({ error: 'error creating request' });
-                _a.label = 5;
-            case 5: return [2];
-        }
+        console.log(req.body);
+        console.log(JSON.parse(req.body.data));
+        res.json({ hi: 'testing' });
+        return [2];
     });
 }); };
 exports.deleteRequest = function (req, res) { return __awaiter(void 0, void 0, void 0, function () {

@@ -18,7 +18,7 @@ var app = express_1.default();
 connectDB_1.default();
 cloudinaryConfig_1.initializeCloudinary();
 if (process.env.NODE_ENV === 'development') {
-    app.use(morgan_1.default('tiny'));
+    app.use(morgan_1.default(':remote-addr - :remote-user [:date[clf]] ":method :url HTTP/:http-version" :status :res[content-length]'));
 }
 app.use(body_parser_1.default.json());
 app.use(body_parser_1.default.urlencoded({ extended: true }));
