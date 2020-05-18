@@ -2,12 +2,8 @@ import { Request, Response, NextFunction } from 'express';
 import { CustomRequest } from '../types/types';
 import User from '../db/models/User';
 
-interface RequestHeaders {
-    _id: string;
-}
-
 const authenticateUser = async (
-    req: CustomRequest<{}, RequestHeaders>,
+    req: Request,
     res: Response,
     next: NextFunction
 ) => {
@@ -18,8 +14,7 @@ const authenticateUser = async (
     } else {
         res.status(401).send({
             authenticated: false,
-            error:
-                'you need to be authenticated in order to access this endpoint',
+            error: 'this is a protected route',
         });
     }
 };

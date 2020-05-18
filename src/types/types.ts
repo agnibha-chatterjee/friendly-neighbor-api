@@ -17,6 +17,7 @@ export interface User extends Document {
         pincode: number;
     };
     cloudinaryPublicId: string;
+    uid: string;
 }
 
 export interface RequestType extends Document {
@@ -35,3 +36,14 @@ export interface CustomRequest<T, S> extends Request {
     body: T;
     headers: S & IncomingHttpHeaders;
 }
+
+export type FindNearbyRequests = {
+    requests: [
+        {
+            postId: string;
+        }
+    ];
+    metaResult: {
+        success: boolean;
+    };
+};

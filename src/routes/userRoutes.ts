@@ -7,7 +7,7 @@ import {
     updateProfilePhoto,
 } from '../controllers/userController';
 import { upload } from '../utils/multerConfig';
-// import { client } from '../grpc/grpc-client';
+import { client } from '../grpc/grpc-client';
 
 const userRouter = Router();
 
@@ -18,14 +18,15 @@ userRouter
     .patch(upload.single('image'), asyncHandler(updateProfilePhoto));
 // userRouter.route('/test').get(
 //     asyncHandler(async (req, res) => {
-//         const location = { latitude: 22, longitude: 88 };
-//         const userId = '28uefre1';
+//         const location = { latitude: 28.38, longitude: 77.12 };
+//         const userId = '9ea96c94';
 //         const radius = 3;
-//         client.registerUser(
+//         client.saveUserLocation(
 //             { userId, location, radius },
 //             (err: any, data: any) => {
 //                 if (err) throw err;
 //                 console.log(data);
+//                 res.json(data);
 //             }
 //         );
 //     })

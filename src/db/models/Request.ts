@@ -1,7 +1,8 @@
 import { Schema, model } from 'mongoose';
 import { RequestType } from '../../types/types';
+import { randomBytes } from 'crypto';
 
-const UserSchema = new Schema({
+const RequestSchema = new Schema({
     requestedBy: {
         type: Schema.Types.ObjectId,
         required: [true, 'userId is required'],
@@ -37,6 +38,19 @@ const UserSchema = new Schema({
         type: Boolean,
         default: false,
     },
+    reqUID: {
+        type: String,
+        unique: true,
+        default: randomBytes(4).toString('hex'),
+    },
+    lat: {
+        type: Number,
+        required: [true, 'location is required'],
+    },
+    lng: {
+        type: Number,
+        required: [true, 'location is required'],
+    },
     images: [
         {
             photoNumber: { type: Number },
@@ -45,4 +59,4 @@ const UserSchema = new Schema({
     ],
 });
 
-export default model<RequestType>('request', UserSchema);
+export default model<RequestType>('request', RequestSchema);

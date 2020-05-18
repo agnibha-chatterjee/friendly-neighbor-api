@@ -55,7 +55,7 @@ var authenticateUser = function (req, res, next) { return __awaiter(void 0, void
                 else {
                     res.status(401).send({
                         authenticated: false,
-                        error: 'you need to be authenticated in order to access this endpoint',
+                        error: 'this is a protected route',
                     });
                 }
                 return [2];

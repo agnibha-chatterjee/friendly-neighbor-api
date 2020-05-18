@@ -39,11 +39,44 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.createRequest = void 0;
+exports.getRequestHistory = exports.deleteRequest = exports.createRequest = exports.getFilteredRequests = void 0;
 var path_1 = require("path");
 var uploadRequestImages_1 = require("../utils/uploadRequestImages");
 var Request_1 = __importDefault(require("../db/models/Request"));
 var detelePhotos_1 = require("../utils/detelePhotos");
+var grpc_client_1 = require("../grpc/grpc-client");
+exports.getFilteredRequests = function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
+    var userId;
+    return __generator(this, function (_a) {
+        userId = req.params.userId;
+        grpc_client_1.client.fetchRequestsNearby({ userId: userId }, function (err, data) { return __awaiter(void 0, void 0, void 0, function () {
+            var requests, ids, posts;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        if (err)
+                            console.log(err);
+                        requests = data.requests;
+                        ids = requests.map(function (_a) {
+                            var postId = _a.postId;
+                            return postId;
+                        });
+                        return [4, Request_1.default.find({
+                                reqUID: { $in: ids },
+                            }, { searchRadius: 0 }).populate({
+                                path: 'requestedBy',
+                                select: 'name email profilePicture',
+                            })];
+                    case 1:
+                        posts = _a.sent();
+                        res.status(200).send(posts);
+                        return [2];
+                }
+            });
+        }); });
+        return [2];
+    });
+}); };
 exports.createRequest = function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
     var files, data, newRequest;
     return __generator(this, function (_a) {
@@ -70,6 +103,45 @@ exports.createRequest = function (req, res) { return __awaiter(void 0, void 0, v
                 res.status(500).send({ error: 'error creating request' });
                 _a.label = 5;
             case 5: return [2];
+        }
+    });
+}); };
+exports.deleteRequest = function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
+    var requestId, deletedRequest;
+    return __generator(this, function (_a) {
+        switch (_a.label) {
+            case 0:
+                requestId = req.params.requestId;
+                return [4, Request_1.default.findByIdAndDelete(requestId)];
+            case 1:
+                deletedRequest = _a.sent();
+                if (deletedRequest) {
+                    res.status(200).send({
+                        success: true,
+                        message: 'request was successfully deleted',
+                    });
+                }
+                else {
+                    res.status(500).send({
+                        success: false,
+                        message: 'error deleting request',
+                    });
+                }
+                return [2];
+        }
+    });
+}); };
+exports.getRequestHistory = function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
+    var userId, requests;
+    return __generator(this, function (_a) {
+        switch (_a.label) {
+            case 0:
+                userId = req.params.userId;
+                return [4, Request_1.default.find({ requestedBy: userId })];
+            case 1:
+                requests = _a.sent();
+                res.status(200).send(requests);
+                return [2];
         }
     });
 }); };

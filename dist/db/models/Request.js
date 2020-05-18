@@ -1,7 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var mongoose_1 = require("mongoose");
-var UserSchema = new mongoose_1.Schema({
+var crypto_1 = require("crypto");
+var RequestSchema = new mongoose_1.Schema({
     requestedBy: {
         type: mongoose_1.Schema.Types.ObjectId,
         required: [true, 'userId is required'],
@@ -37,6 +38,19 @@ var UserSchema = new mongoose_1.Schema({
         type: Boolean,
         default: false,
     },
+    reqUID: {
+        type: String,
+        unique: true,
+        default: crypto_1.randomBytes(4).toString('hex'),
+    },
+    lat: {
+        type: Number,
+        required: [true, 'location is required'],
+    },
+    lng: {
+        type: Number,
+        required: [true, 'location is required'],
+    },
     images: [
         {
             photoNumber: { type: Number },
@@ -44,4 +58,4 @@ var UserSchema = new mongoose_1.Schema({
         },
     ],
 });
-exports.default = mongoose_1.model('request', UserSchema);
+exports.default = mongoose_1.model('request', RequestSchema);
