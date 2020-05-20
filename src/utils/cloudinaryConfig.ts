@@ -1,5 +1,5 @@
 import { v2 } from 'cloudinary';
-const { config, uploader } = v2;
+const { config, uploader, api: cloudinaryApi } = v2;
 const initializeCloudinary = () =>
     config({
         cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
@@ -7,4 +7,4 @@ const initializeCloudinary = () =>
         api_secret: process.env.CLOUDINARY_API_SECRET,
     });
 
-export { uploader, initializeCloudinary };
+export { uploader, initializeCloudinary, cloudinaryApi };

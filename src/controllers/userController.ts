@@ -30,13 +30,23 @@ export const loginOrSignUp = async (
 ) => {
     const { idToken } = req.body;
     const ticket = await client.verifyIdToken({
-        idToken: idToken,
+        idToken,
         audience: process.env.GOOGLE_CLIENT_ID!,
     });
     const payload = ticket.getPayload();
     if (payload !== undefined) {
         const { email, name, picture, sub } = payload;
-        const newUser = { email, name, profilePicture: picture, googleId: sub };
+        const newUser = {
+            email,
+            name,
+            profilePicture: picture,
+            googleId: sub,
+            defaultLocation: {
+                latitude: 28.7,
+                longitude: 77.1,
+            },
+            defaultSearchRadius: 2,
+        };
         const existingUser = await User.findOne({ email });
         if (existingUser) {
             res.status(200).send({ newUser: false, user: existingUser });
@@ -84,7 +94,7 @@ export const updateProfilePhoto = async (req: Request, res: Response) => {
             overwrite: true,
         },
         async (error, result) => {
-            if (error) return res.send(error);
+            if (error) throw error;
             res.status(200).send({ imageURL: result?.secure_url });
             await User.findByIdAndUpdate(userId, {
                 $set: {

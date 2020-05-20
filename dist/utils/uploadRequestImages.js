@@ -63,23 +63,26 @@ exports.uploadRequestImages = void 0;
 var cloudinaryConfig_1 = require("./cloudinaryConfig");
 var path_1 = require("path");
 var Request_1 = __importDefault(require("../db/models/Request"));
+var cuid_1 = __importDefault(require("cuid"));
 exports.uploadRequestImages = function (images, reqId) {
     var photos = [];
     return new Promise(function (resolve, reject) {
-        images.map(function (image, index) { return __awaiter(void 0, void 0, void 0, function () {
-            var i;
+        images.map(function (image) { return __awaiter(void 0, void 0, void 0, function () {
+            var fileName, i;
             return __generator(this, function (_a) {
                 switch (_a.label) {
-                    case 0: return [4, cloudinaryConfig_1.uploader.upload(path_1.resolve(__dirname, "../../uploads/" + image.originalname), {
-                            resource_type: 'image',
-                            public_id: "requests/" + reqId + "/photo-" + (index + 1),
-                            overwrite: true,
-                        })];
+                    case 0:
+                        fileName = cuid_1.default();
+                        return [4, cloudinaryConfig_1.uploader.upload(path_1.resolve(__dirname, "../../uploads/" + image.originalname), {
+                                resource_type: 'image',
+                                public_id: "requests/" + fileName,
+                                overwrite: true,
+                            })];
                     case 1:
                         i = _a.sent();
                         if (i.secure_url) {
                             photos = __spread(photos, [
-                                { imageURL: i.secure_url, photoNumber: index + 1 },
+                                { imageURL: i.secure_url, name: fileName },
                             ]);
                             if (photos.length === images.length) {
                                 Request_1.default.findByIdAndUpdate(reqId, {

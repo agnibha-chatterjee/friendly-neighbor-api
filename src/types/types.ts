@@ -18,6 +18,11 @@ export interface User extends Document {
     };
     cloudinaryPublicId: string;
     uid: string;
+    defaultLocation: {
+        latitude: string;
+        longitude: string;
+    };
+    defaultSearchRadius: number;
 }
 
 export interface RequestType extends Document {
@@ -29,12 +34,13 @@ export interface RequestType extends Document {
     contactNumber: string;
     searchRadius: number;
     completed: boolean;
-    images: Array<{ imageURL: string; photoNumber: number }>;
+    images: Array<{ imageURL: string; name: string }>;
     location: {
         latitude: string;
         longitude: string;
     };
     cost: number;
+    reqUID: string;
 }
 
 export interface CustomRequest<T, S> extends Request {

@@ -1,6 +1,6 @@
 import { Schema, model } from 'mongoose';
 import { User } from '../../types/types';
-import { randomBytes } from 'crypto';
+import { generate } from 'shortid';
 
 const UserSchema = new Schema({
     name: {
@@ -23,7 +23,7 @@ const UserSchema = new Schema({
     uid: {
         type: String,
         unique: true,
-        default: randomBytes(4).toString('hex'),
+        default: generate,
     },
     profilePicture: {
         type: String,
@@ -54,6 +54,10 @@ const UserSchema = new Schema({
             type: Number,
             required: [true, 'location is required'],
         },
+    },
+    defaultSearchRadius: {
+        type: Number,
+        required: [true, 'search-radius is required'],
     },
 });
 

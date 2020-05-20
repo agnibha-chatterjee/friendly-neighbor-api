@@ -62,7 +62,17 @@ exports.loginOrSignUp = function (req, res) { return __awaiter(void 0, void 0, v
                 payload = ticket.getPayload();
                 if (!(payload !== undefined)) return [3, 6];
                 email = payload.email, name_1 = payload.name, picture = payload.picture, sub = payload.sub;
-                newUser = { email: email, name: name_1, profilePicture: picture, googleId: sub };
+                newUser = {
+                    email: email,
+                    name: name_1,
+                    profilePicture: picture,
+                    googleId: sub,
+                    defaultLocation: {
+                        latitude: 28.7,
+                        longitude: 77.1,
+                    },
+                    defaultSearchRadius: 2,
+                };
                 return [4, User_1.default.findOne({ email: email })];
             case 2:
                 existingUser = _a.sent();
@@ -117,7 +127,7 @@ exports.updateProfilePhoto = function (req, res) { return __awaiter(void 0, void
                         switch (_a.label) {
                             case 0:
                                 if (error)
-                                    return [2, res.send(error)];
+                                    throw error;
                                 res.status(200).send({ imageURL: result === null || result === void 0 ? void 0 : result.secure_url });
                                 return [4, User_1.default.findByIdAndUpdate(userId, {
                                         $set: {

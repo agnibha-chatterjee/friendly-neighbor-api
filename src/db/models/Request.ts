@@ -1,6 +1,6 @@
 import { Schema, model } from 'mongoose';
 import { RequestType } from '../../types/types';
-import { randomBytes } from 'crypto';
+import { generate } from 'shortid';
 
 const RequestSchema = new Schema({
     requestedBy: {
@@ -41,7 +41,7 @@ const RequestSchema = new Schema({
     reqUID: {
         type: String,
         unique: true,
-        default: randomBytes(4).toString('hex'),
+        default: generate,
     },
     location: {
         latitude: {
@@ -58,7 +58,7 @@ const RequestSchema = new Schema({
     },
     images: [
         {
-            photoNumber: { type: Number },
+            name: { type: String },
             imageURL: { type: String },
         },
     ],

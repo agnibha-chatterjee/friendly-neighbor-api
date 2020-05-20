@@ -15,6 +15,6 @@ const FnCore = grpc.loadPackageDefinition(packageDefinition).FnCore;
 
 //@ts-ignore
 export const client = new FnCore(
-    'localhost:9120',
+    'localhost:9121',
     grpc.credentials.createInsecure()
 );

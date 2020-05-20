@@ -31,4 +31,4 @@ var packageDefinition = protoLoader.loadSync(PROTO_PATH, {
     arrays: true,
 });
 var FnCore = grpc.loadPackageDefinition(packageDefinition).FnCore;
-exports.client = new FnCore('localhost:9120', grpc.credentials.createInsecure());
+exports.client = new FnCore('localhost:9121', grpc.credentials.createInsecure());

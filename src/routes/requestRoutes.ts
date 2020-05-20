@@ -4,6 +4,7 @@ import {
     createRequest,
     getFilteredRequests,
     getRequestHistory,
+    deleteRequest,
 } from '../controllers/requestController';
 import { upload } from '../utils/multerConfig';
 import authenticateUser from '../middlewares/authenticateUser';
@@ -18,6 +19,7 @@ requestRouter
     .get(authenticateUser, asyncHandler(getRequestHistory));
 
 requestRouter.route('/').post(
+    authenticateUser,
     upload.fields([
         { name: 'image1', maxCount: 1 },
         { name: 'image2', maxCount: 1 },
@@ -25,5 +27,7 @@ requestRouter.route('/').post(
     ]),
     asyncHandler(createRequest)
 );
+
+requestRouter.route('/:requestId').delete(authenticateUser, deleteRequest);
 
 export default requestRouter;

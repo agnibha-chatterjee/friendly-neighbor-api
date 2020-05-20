@@ -1,9 +1,9 @@
 import { uploader } from './cloudinaryConfig';
 import { resolve as pathResolve } from 'path';
-import { unlinkSync } from 'fs';
 import Request from '../db/models/Request';
+import cuid from 'cuid';
 
-type Photos = Array<{ imageURL: string; photoNumber: number }>;
+type Photos = Array<{ imageURL: string; name: string }>;
 
 export const uploadRequestImages = (
     images:
@@ -16,19 +16,20 @@ export const uploadRequestImages = (
     let photos: Photos = [];
     return new Promise((resolve, reject) => {
         //@ts-ignore
-        images.map(async (image: Express.Multer.File, index: number) => {
+        images.map(async (image: Express.Multer.File) => {
+            const fileName = cuid();
             const i = await uploader.upload(
                 pathResolve(__dirname, `../../uploads/${image.originalname}`),
                 {
                     resource_type: 'image',
-                    public_id: `requests/${reqId}/photo-${index + 1}`,
+                    public_id: `requests/${fileName}`,
                     overwrite: true,
                 }
             );
             if (i.secure_url) {
                 photos = [
                     ...photos,
-                    { imageURL: i.secure_url, photoNumber: index + 1 },
+                    { imageURL: i.secure_url, name: fileName },
                 ];
                 if (photos.length === images.length) {
                     Request.findByIdAndUpdate(reqId, {

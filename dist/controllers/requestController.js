@@ -45,40 +45,24 @@ var uploadRequestImages_1 = require("../utils/uploadRequestImages");
 var Request_1 = __importDefault(require("../db/models/Request"));
 var detelePhotos_1 = require("../utils/detelePhotos");
 var grpc_client_1 = require("../grpc/grpc-client");
+var User_1 = __importDefault(require("../db/models/User"));
 exports.getFilteredRequests = function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
     var userId;
     return __generator(this, function (_a) {
         userId = req.params.userId;
         grpc_client_1.client.fetchRequestsNearby({ userId: userId }, function (err, data) { return __awaiter(void 0, void 0, void 0, function () {
-            var requests, ids, posts;
             return __generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0:
-                        if (err)
-                            console.log(err);
-                        requests = data.requests;
-                        ids = requests.map(function (_a) {
-                            var postId = _a.postId;
-                            return postId;
-                        });
-                        return [4, Request_1.default.find({
-                                reqUID: { $in: ids },
-                            }, { searchRadius: 0 }).populate({
-                                path: 'requestedBy',
-                                select: 'name email profilePicture',
-                            })];
-                    case 1:
-                        posts = _a.sent();
-                        res.status(200).send(posts);
-                        return [2];
-                }
+                if (err)
+                    console.log(err);
+                res.json(data);
+                return [2];
             });
         }); });
         return [2];
     });
 }); };
 exports.createRequest = function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
-    var files, data, uid, newRequest;
+    var files, data, userId, newRequest, user, location_1, searchRadius, reqUID;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
@@ -86,13 +70,13 @@ exports.createRequest = function (req, res) { return __awaiter(void 0, void 0, v
                 data = JSON.parse(req.body.data);
                 data['location'] = JSON.parse(data['location']);
                 data['cost'] = parseInt(data['cost']);
-                uid = req.body.uid;
+                userId = req.body.uid;
                 return [4, Request_1.default.create(data)];
             case 1:
                 newRequest = _a.sent();
-                if (!newRequest._id) return [3, 4];
+                if (!newRequest._id) return [3, 5];
                 res.status(201).send(newRequest);
-                if (!req.files) return [3, 3];
+                if (!(Object.keys(req.files).length > 0)) return [3, 3];
                 files = Object.keys(req.files).map(function (fieldname) {
                     return req.files[fieldname][0];
                 });
@@ -101,16 +85,38 @@ exports.createRequest = function (req, res) { return __awaiter(void 0, void 0, v
                 _a.sent();
                 detelePhotos_1.deletePhotos(path_1.resolve(__dirname, "../../uploads/"));
                 _a.label = 3;
-            case 3: return [3, 5];
+            case 3: return [4, User_1.default.findById(newRequest.requestedBy)];
             case 4:
+                user = _a.sent();
+                location_1 = newRequest.location, searchRadius = newRequest.searchRadius, reqUID = newRequest.reqUID;
+                if (JSON.stringify(user === null || user === void 0 ? void 0 : user.defaultLocation) === JSON.stringify(location_1)) {
+                    grpc_client_1.client.forwardRequestNearbyDefaultLocation({ userId: userId, location: location_1, radius: searchRadius, postId: reqUID }, function (err, data) {
+                        if (err)
+                            throw err;
+                        if (data.success) {
+                            res.end();
+                        }
+                    });
+                }
+                else {
+                    grpc_client_1.client.forwardRequestNearbyCustomLocation({ userId: userId, location: location_1, radius: searchRadius, postId: reqUID }, function (err, data) {
+                        if (err)
+                            throw err;
+                        if (data.success) {
+                            res.end();
+                        }
+                    });
+                }
+                return [3, 6];
+            case 5:
                 res.status(500).send({ error: 'error creating request' });
-                _a.label = 5;
-            case 5: return [2];
+                _a.label = 6;
+            case 6: return [2];
         }
     });
 }); };
 exports.deleteRequest = function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
-    var requestId, deletedRequest;
+    var requestId, deletedRequest, user, location_2, searchRadius, reqUID;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
@@ -118,19 +124,36 @@ exports.deleteRequest = function (req, res) { return __awaiter(void 0, void 0, v
                 return [4, Request_1.default.findByIdAndDelete(requestId)];
             case 1:
                 deletedRequest = _a.sent();
-                if (deletedRequest) {
-                    res.status(200).send({
-                        success: true,
-                        message: 'request was successfully deleted',
-                    });
-                }
-                else {
-                    res.status(500).send({
-                        success: false,
-                        message: 'error deleting request',
-                    });
-                }
-                return [2];
+                if (!deletedRequest) return [3, 3];
+                res.status(200).send({
+                    success: true,
+                    message: 'request was successfully deleted',
+                });
+                return [4, User_1.default.findById(deletedRequest.requestedBy)];
+            case 2:
+                user = _a.sent();
+                location_2 = deletedRequest.location, searchRadius = deletedRequest.searchRadius, reqUID = deletedRequest.reqUID;
+                grpc_client_1.client.deleteRequest({
+                    userId: user === null || user === void 0 ? void 0 : user.uid,
+                    location: location_2,
+                    radius: searchRadius,
+                    postId: reqUID,
+                }, function (err, data) {
+                    if (err)
+                        throw err;
+                    console.log(data);
+                    if (data.success) {
+                        res.end();
+                    }
+                });
+                return [3, 4];
+            case 3:
+                res.status(500).send({
+                    success: false,
+                    message: 'error deleting request',
+                });
+                _a.label = 4;
+            case 4: return [2];
         }
     });
 }); };
