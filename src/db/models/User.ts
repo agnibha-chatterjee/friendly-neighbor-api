@@ -34,8 +34,7 @@ const UserSchema = new Schema({
         trim: true,
     },
     address: {
-        address1: { type: String, trim: true },
-        address2: { type: String, trim: true },
+        addr: { type: String, trim: true },
         city: { type: String, trim: true },
         state: { type: String, trim: true },
         country: { type: String, trim: true },
@@ -59,9 +58,7 @@ const UserSchema = new Schema({
         type: Number,
         required: [true, 'search-radius is required'],
     },
-    lastModified:{
-
-    }
+    lastModified: {},
 });
 
 export default model<User>('user', UserSchema);

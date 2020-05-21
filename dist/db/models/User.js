@@ -34,8 +34,7 @@ var UserSchema = new mongoose_1.Schema({
         trim: true,
     },
     address: {
-        address1: { type: String, trim: true },
-        address2: { type: String, trim: true },
+        addr: { type: String, trim: true },
         city: { type: String, trim: true },
         state: { type: String, trim: true },
         country: { type: String, trim: true },
@@ -59,6 +58,6 @@ var UserSchema = new mongoose_1.Schema({
         type: Number,
         required: [true, 'search-radius is required'],
     },
-    lastModified: {}
+    lastModified: {},
 });
 exports.default = mongoose_1.model('user', UserSchema);

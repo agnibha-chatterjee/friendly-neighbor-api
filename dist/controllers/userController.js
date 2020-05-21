@@ -66,11 +66,6 @@ exports.loginOrSignUp = function (req, res) { return __awaiter(void 0, void 0, v
                     name: name_1,
                     profilePicture: picture,
                     googleId: sub,
-                    defaultLocation: {
-                        latitude: 28.7,
-                        longitude: 77.1,
-                    },
-                    defaultSearchRadius: 2,
                 };
                 return [4, User_1.default.findOne({ email: email })];
             case 2:
@@ -92,14 +87,13 @@ exports.loginOrSignUp = function (req, res) { return __awaiter(void 0, void 0, v
     });
 }); };
 exports.registerUser = function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
-    var _a, contactNumber, address1, address2, city, country, pincode, state, id, address, registeredUser;
+    var _a, address, defaultSearchRadius, defaultLocation, contactNumber, id, registeredUser;
     return __generator(this, function (_b) {
         switch (_b.label) {
             case 0:
-                _a = req.body, contactNumber = _a.contactNumber, address1 = _a.address1, address2 = _a.address2, city = _a.city, country = _a.country, pincode = _a.pincode, state = _a.state, id = _a.id;
-                address = { address1: address1, address2: address2, city: city, country: country, pincode: pincode, state: state };
+                _a = req.body, address = _a.address, defaultSearchRadius = _a.defaultSearchRadius, defaultLocation = _a.defaultLocation, contactNumber = _a.contactNumber, id = _a.id;
                 return [4, User_1.default.findByIdAndUpdate(id, {
-                        $set: { address: address, contactNumber: contactNumber },
+                        $set: { address: address, defaultLocation: defaultLocation, defaultSearchRadius: defaultSearchRadius, contactNumber: contactNumber },
                     })];
             case 1:
                 registeredUser = _b.sent();

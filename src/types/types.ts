@@ -9,8 +9,7 @@ export interface User extends Document {
     profilePicture: string;
     contactNumber: string;
     address: {
-        address1: string;
-        address2: string;
+        addr: string;
         city: string;
         state: string;
         country: string;
@@ -19,8 +18,8 @@ export interface User extends Document {
     cloudinaryPublicId: string;
     uid: string;
     defaultLocation: {
-        latitude: string;
-        longitude: string;
+        latitude: number;
+        longitude: number;
     };
     defaultSearchRadius: number;
 }

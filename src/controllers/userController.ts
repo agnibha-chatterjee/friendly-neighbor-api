@@ -14,12 +14,15 @@ interface LoginOrSignUpData {
 interface RegisterUserData {
     id: string;
     contactNumber: string;
-    address1: string;
-    address2: string;
-    city: string;
-    state: string;
-    country: string;
-    pincode: number;
+    address: {
+        addr: string;
+        city: string;
+        state: string;
+        country: string;
+        pincode: number;
+    };
+    defaultLocation: { latitude: number; longitude: number };
+    defaultSearchRadius: number;
 }
 
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
@@ -41,11 +44,6 @@ export const loginOrSignUp = async (
             name,
             profilePicture: picture,
             googleId: sub,
-            defaultLocation: {
-                latitude: 28.7,
-                longitude: 77.1,
-            },
-            defaultSearchRadius: 2,
         };
         const existingUser = await User.findOne({ email });
         if (existingUser) {
@@ -64,18 +62,14 @@ export const registerUser = async (
     res: Response
 ) => {
     const {
+        address,
+        defaultSearchRadius,
+        defaultLocation,
         contactNumber,
-        address1,
-        address2,
-        city,
-        country,
-        pincode,
-        state,
         id,
     } = req.body;
-    const address = { address1, address2, city, country, pincode, state };
     const registeredUser = await User.findByIdAndUpdate(id, {
-        $set: { address, contactNumber },
+        $set: { address, defaultLocation, defaultSearchRadius, contactNumber },
     });
     res.status(201).send(registeredUser);
 };
