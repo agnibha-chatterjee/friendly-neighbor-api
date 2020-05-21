@@ -59,6 +59,9 @@ const UserSchema = new Schema({
         type: Number,
         required: [true, 'search-radius is required'],
     },
+    lastModified:{
+
+    }
 });
 
 export default model<User>('user', UserSchema);

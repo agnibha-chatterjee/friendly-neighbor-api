@@ -80,9 +80,10 @@ export const registerUser = async (
     res.status(201).send(registeredUser);
 };
 
-export const updateProfilePhoto = async (req: Request, res: Response) => {
+export const updateProfile = async (req: Request, res: Response) => {
+    console.log(req.body);
     const { userId } = req.params;
-    await compressImage(userId, req.file);
+    // await compressImage(userId, req.file);
     uploader.upload(
         resolve(
             __dirname,
@@ -111,3 +112,17 @@ export const postUserCoordinates = async (req: Request, res: Response) => {
     console.log(req.body);
     res.status(200).send(req.body);
 };
+
+export const getUserData = async (req: Request, res: Response) => {
+    const { userId } = req.params;
+    const user = await User.findById(userId, { address: 0 });
+    res.status(200).send(user);
+};
+
+// export const editUserProfile = async (req: Request, res: Response) => {
+//     const { userId } = req.params;
+//     const { data } = req.body;
+//     // const user = await User.findByIdAndUpdate(userId, { address: 0 });
+//     console.log(data);
+//     res.status(200).send({ success: true });
+// };

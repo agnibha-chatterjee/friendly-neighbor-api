@@ -59,5 +59,6 @@ var UserSchema = new mongoose_1.Schema({
         type: Number,
         required: [true, 'search-radius is required'],
     },
+    lastModified: {}
 });
 exports.default = mongoose_1.model('user', UserSchema);

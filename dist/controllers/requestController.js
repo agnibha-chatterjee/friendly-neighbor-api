@@ -47,14 +47,45 @@ var detelePhotos_1 = require("../utils/detelePhotos");
 var grpc_client_1 = require("../grpc/grpc-client");
 var User_1 = __importDefault(require("../db/models/User"));
 exports.getFilteredRequests = function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
-    var userId;
+    var userId, fetchedRequests;
     return __generator(this, function (_a) {
         userId = req.params.userId;
+        fetchedRequests = [];
         grpc_client_1.client.fetchRequestsNearby({ userId: userId }, function (err, data) { return __awaiter(void 0, void 0, void 0, function () {
+            var requests;
             return __generator(this, function (_a) {
                 if (err)
                     console.log(err);
-                res.json(data);
+                requests = data.requests;
+                requests.map(function (_a) {
+                    var postId = _a.postId, distance = _a.distance;
+                    return __awaiter(void 0, void 0, void 0, function () {
+                        var request;
+                        return __generator(this, function (_b) {
+                            switch (_b.label) {
+                                case 0: return [4, Request_1.default.findOne({
+                                        reqUID: postId,
+                                    }).populate({
+                                        path: 'requestedBy',
+                                        select: 'name email profilePicture',
+                                    })];
+                                case 1:
+                                    request = _b.sent();
+                                    fetchedRequests.push({
+                                        request: request,
+                                        distance: Math.ceil(distance),
+                                    });
+                                    if (fetchedRequests.length === requests.length) {
+                                        res.status(200).send(fetchedRequests);
+                                    }
+                                    else if (fetchedRequests.length === 0) {
+                                        res.status(200).send(fetchedRequests);
+                                    }
+                                    return [2];
+                            }
+                        });
+                    });
+                });
                 return [2];
             });
         }); });

@@ -39,12 +39,11 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.postUserCoordinates = exports.updateProfilePhoto = exports.registerUser = exports.loginOrSignUp = void 0;
+exports.getUserData = exports.postUserCoordinates = exports.updateProfile = exports.registerUser = exports.loginOrSignUp = void 0;
 var User_1 = __importDefault(require("../db/models/User"));
 var google_auth_library_1 = require("google-auth-library");
 var cloudinaryConfig_1 = require("../utils/cloudinaryConfig");
 var path_1 = require("path");
-var compressImage_1 = require("../utils/compressImage");
 var detelePhotos_1 = require("../utils/detelePhotos");
 var client = new google_auth_library_1.OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 exports.loginOrSignUp = function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
@@ -109,41 +108,36 @@ exports.registerUser = function (req, res) { return __awaiter(void 0, void 0, vo
         }
     });
 }); };
-exports.updateProfilePhoto = function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
+exports.updateProfile = function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
     var userId;
     return __generator(this, function (_a) {
-        switch (_a.label) {
-            case 0:
-                userId = req.params.userId;
-                return [4, compressImage_1.compressImage(userId, req.file)];
-            case 1:
-                _a.sent();
-                cloudinaryConfig_1.uploader.upload(path_1.resolve(__dirname, "../../uploads/" + userId + "-" + req.file.originalname + ".jpeg"), {
-                    resource_type: 'image',
-                    public_id: "profilePhotos/" + userId,
-                    overwrite: true,
-                }, function (error, result) { return __awaiter(void 0, void 0, void 0, function () {
-                    return __generator(this, function (_a) {
-                        switch (_a.label) {
-                            case 0:
-                                if (error)
-                                    throw error;
-                                res.status(200).send({ imageURL: result === null || result === void 0 ? void 0 : result.secure_url });
-                                return [4, User_1.default.findByIdAndUpdate(userId, {
-                                        $set: {
-                                            profilePicture: result === null || result === void 0 ? void 0 : result.secure_url,
-                                            cloudinaryPublicId: result === null || result === void 0 ? void 0 : result.public_id,
-                                        },
-                                    })];
-                            case 1:
-                                _a.sent();
-                                detelePhotos_1.deletePhotos(path_1.resolve(__dirname, "../../uploads/"));
-                                return [2];
-                        }
-                    });
-                }); });
-                return [2];
-        }
+        console.log(req.body);
+        userId = req.params.userId;
+        cloudinaryConfig_1.uploader.upload(path_1.resolve(__dirname, "../../uploads/" + userId + "-" + req.file.originalname + ".jpeg"), {
+            resource_type: 'image',
+            public_id: "profilePhotos/" + userId,
+            overwrite: true,
+        }, function (error, result) { return __awaiter(void 0, void 0, void 0, function () {
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        if (error)
+                            throw error;
+                        res.status(200).send({ imageURL: result === null || result === void 0 ? void 0 : result.secure_url });
+                        return [4, User_1.default.findByIdAndUpdate(userId, {
+                                $set: {
+                                    profilePicture: result === null || result === void 0 ? void 0 : result.secure_url,
+                                    cloudinaryPublicId: result === null || result === void 0 ? void 0 : result.public_id,
+                                },
+                            })];
+                    case 1:
+                        _a.sent();
+                        detelePhotos_1.deletePhotos(path_1.resolve(__dirname, "../../uploads/"));
+                        return [2];
+                }
+            });
+        }); });
+        return [2];
     });
 }); };
 exports.postUserCoordinates = function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
@@ -151,5 +145,19 @@ exports.postUserCoordinates = function (req, res) { return __awaiter(void 0, voi
         console.log(req.body);
         res.status(200).send(req.body);
         return [2];
+    });
+}); };
+exports.getUserData = function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
+    var userId, user;
+    return __generator(this, function (_a) {
+        switch (_a.label) {
+            case 0:
+                userId = req.params.userId;
+                return [4, User_1.default.findById(userId, { address: 0 })];
+            case 1:
+                user = _a.sent();
+                res.status(200).send(user);
+                return [2];
+        }
     });
 }); };

@@ -41,6 +41,7 @@ export interface RequestType extends Document {
     };
     cost: number;
     reqUID: string;
+    distance: number;
 }
 
 export interface CustomRequest<T, S> extends Request {
@@ -52,6 +53,7 @@ export type FindNearbyRequests = {
     requests: [
         {
             postId: string;
+            distance: number;
         }
     ];
     metaResult: {

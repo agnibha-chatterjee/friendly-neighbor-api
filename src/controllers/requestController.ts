@@ -9,23 +9,29 @@ import User from '../db/models/User';
 
 export const getFilteredRequests = async (req: Req, res: Response) => {
     const { userId } = req.params;
+    let fetchedRequests: object[] = [];
     client.fetchRequestsNearby(
         { userId },
         async (err: string, data: FindNearbyRequests) => {
             if (err) console.log(err);
-            res.json(data);
-            //     const { requests } = data;
-            //     const ids = requests.map(({ postId }) => postId);
-            //     const posts = await Request.find(
-            //         {
-            //             reqUID: { $in: ids },
-            //         },
-            //         { searchRadius: 0 }
-            //     ).populate({
-            //         path: 'requestedBy',
-            //         select: 'name email profilePicture',t
-            //     });
-            //     res.status(200).send(posts);
+            const { requests } = data;
+            requests.map(async ({ postId, distance }) => {
+                const request = await Request.findOne({
+                    reqUID: postId,
+                }).populate({
+                    path: 'requestedBy',
+                    select: 'name email profilePicture',
+                });
+                fetchedRequests.push({
+                    request,
+                    distance: Math.ceil(distance),
+                });
+                if (fetchedRequests.length === requests.length) {
+                    res.status(200).send(fetchedRequests);
+                } else if (fetchedRequests.length === 0) {
+                    res.status(200).send(fetchedRequests);
+                }
+            });
         }
     );
 };
