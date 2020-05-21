@@ -22,6 +22,7 @@ export interface User extends Document {
         longitude: number;
     };
     defaultSearchRadius: number;
+    lastModified: Date | string;
 }
 
 export interface RequestType extends Document {

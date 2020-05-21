@@ -6,6 +6,7 @@ import { uploader } from '../utils/cloudinaryConfig';
 import { resolve } from 'path';
 import { compressImage } from '../utils/compressImage';
 import { deletePhotos } from '../utils/detelePhotos';
+import moment from 'moment';
 
 interface LoginOrSignUpData {
     idToken: string;
@@ -75,31 +76,83 @@ export const registerUser = async (
 };
 
 export const updateProfile = async (req: Request, res: Response) => {
-    console.log(req.body);
     const { userId } = req.params;
-    // await compressImage(userId, req.file);
-    uploader.upload(
-        resolve(
-            __dirname,
-            `../../uploads/${userId}-${req.file.originalname}.jpeg`
-        ),
-        {
-            resource_type: 'image',
-            public_id: `profilePhotos/${userId}`,
-            overwrite: true,
-        },
-        async (error, result) => {
-            if (error) throw error;
-            res.status(200).send({ imageURL: result?.secure_url });
+    const {
+        name,
+        contactNumber,
+        address,
+        defaultLocation,
+        defaultSearchRadius,
+        email,
+    } = JSON.parse(req.body.data);
+    const user = await User.findById(userId);
+    if (name !== user?.name) {
+        if (user?.lastModified === '') {
             await User.findByIdAndUpdate(userId, {
-                $set: {
-                    profilePicture: result?.secure_url,
-                    cloudinaryPublicId: result?.public_id,
-                },
+                $set: { name, lastModified: moment().toISOString() },
             });
-            deletePhotos(resolve(__dirname, `../../uploads/`));
+        } else {
+            const daysSinceLastEdit = moment().diff(
+                moment(user?.lastModified),
+                'days'
+            );
+            if (daysSinceLastEdit < 365) {
+                console.log('not allowed');
+                return res.send({
+                    error:
+                        'You can change your name every 365 days. Please try again!',
+                });
+            } else {
+                await User.findByIdAndUpdate(userId, {
+                    $set: { name, lastModified: moment().toISOString() },
+                });
+            }
         }
-    );
+    }
+    if (!req.file) {
+        await User.findByIdAndUpdate(userId, {
+            $set: {
+                email,
+                contactNumber,
+                defaultLocation,
+                defaultSearchRadius,
+                address,
+            },
+        });
+        return res.status(200).send({ success: true });
+    } else {
+        await compressImage(userId, req.file);
+        uploader.upload(
+            resolve(
+                __dirname,
+                `../../uploads/${userId}-${req.file.originalname}.jpeg`
+            ),
+            {
+                resource_type: 'image',
+                public_id: `profilePhotos/${userId}`,
+                overwrite: true,
+            },
+            async (error, result) => {
+                if (error) throw error;
+                res.status(200).send({
+                    imageURL: result?.secure_url,
+                    success: true,
+                });
+                await User.findByIdAndUpdate(userId, {
+                    $set: {
+                        profilePicture: result?.secure_url,
+                        cloudinaryPublicId: result?.public_id,
+                        email,
+                        contactNumber,
+                        defaultLocation,
+                        defaultSearchRadius,
+                        address,
+                    },
+                });
+                deletePhotos(resolve(__dirname, `../../uploads/`));
+            }
+        );
+    }
 };
 
 export const postUserCoordinates = async (req: Request, res: Response) => {
@@ -113,10 +166,4 @@ export const getUserData = async (req: Request, res: Response) => {
     res.status(200).send(user);
 };
 
-// export const editUserProfile = async (req: Request, res: Response) => {
-//     const { userId } = req.params;
-//     const { data } = req.body;
-//     // const user = await User.findByIdAndUpdate(userId, { address: 0 });
-//     console.log(data);
-//     res.status(200).send({ success: true });
-// };
+//{"error":"You can change your name every 365 days. Please try again!"}
