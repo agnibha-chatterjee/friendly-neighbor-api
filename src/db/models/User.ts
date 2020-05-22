@@ -47,18 +47,18 @@ const UserSchema = new Schema({
     defaultLocation: {
         latitude: {
             type: Number,
-            required: [true, 'location is required'],
         },
         longitude: {
             type: Number,
-            required: [true, 'location is required'],
         },
     },
     defaultSearchRadius: {
         type: Number,
-        required: [true, 'search-radius is required'],
     },
-    lastModified: {},
+    lastModified: {
+        type: String,
+        default: '',
+    },
 });
 
 export default model<User>('user', UserSchema);

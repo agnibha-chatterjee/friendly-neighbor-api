@@ -47,17 +47,17 @@ var UserSchema = new mongoose_1.Schema({
     defaultLocation: {
         latitude: {
             type: Number,
-            required: [true, 'location is required'],
         },
         longitude: {
             type: Number,
-            required: [true, 'location is required'],
         },
     },
     defaultSearchRadius: {
         type: Number,
-        required: [true, 'search-radius is required'],
     },
-    lastModified: {},
+    lastModified: {
+        type: String,
+        default: '',
+    },
 });
 exports.default = mongoose_1.model('user', UserSchema);

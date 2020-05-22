@@ -39,7 +39,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getUserData = exports.postUserCoordinates = exports.updateProfile = exports.registerUser = exports.loginOrSignUp = void 0;
+exports.getUserData = exports.updateProfile = exports.registerUser = exports.loginOrSignUp = void 0;
 var User_1 = __importDefault(require("../db/models/User"));
 var google_auth_library_1 = require("google-auth-library");
 var cloudinaryConfig_1 = require("../utils/cloudinaryConfig");
@@ -47,14 +47,15 @@ var path_1 = require("path");
 var compressImage_1 = require("../utils/compressImage");
 var detelePhotos_1 = require("../utils/detelePhotos");
 var moment_1 = __importDefault(require("moment"));
-var client = new google_auth_library_1.OAuth2Client(process.env.GOOGLE_CLIENT_ID);
+var grpc_client_1 = require("../grpc/grpc-client");
+var Gclient = new google_auth_library_1.OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 exports.loginOrSignUp = function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
     var idToken, ticket, payload, email, name_1, picture, sub, newUser, existingUser, user;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
                 idToken = req.body.idToken;
-                return [4, client.verifyIdToken({
+                return [4, Gclient.verifyIdToken({
                         idToken: idToken,
                         audience: process.env.GOOGLE_CLIENT_ID,
                     })];
@@ -100,6 +101,17 @@ exports.registerUser = function (req, res) { return __awaiter(void 0, void 0, vo
             case 1:
                 registeredUser = _b.sent();
                 res.status(201).send(registeredUser);
+                grpc_client_1.client.saveUserLocation({
+                    userId: registeredUser === null || registeredUser === void 0 ? void 0 : registeredUser.uid,
+                    location: registeredUser === null || registeredUser === void 0 ? void 0 : registeredUser.defaultLocation,
+                    radius: defaultSearchRadius,
+                }, function (err, data) {
+                    if (err)
+                        throw err;
+                    if (data.success) {
+                        res.end();
+                    }
+                });
                 return [2];
         }
     });
@@ -185,15 +197,20 @@ exports.updateProfile = function (req, res) { return __awaiter(void 0, void 0, v
                     });
                 }); });
                 _b.label = 10;
-            case 10: return [2];
+            case 10:
+                grpc_client_1.client.saveUserLocation({
+                    userId: user === null || user === void 0 ? void 0 : user.uid,
+                    location: defaultLocation,
+                    radius: defaultSearchRadius,
+                }, function (err, data) {
+                    if (err)
+                        throw err;
+                    if (data.success) {
+                        res.end();
+                    }
+                });
+                return [2];
         }
-    });
-}); };
-exports.postUserCoordinates = function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
-    return __generator(this, function (_a) {
-        console.log(req.body);
-        res.status(200).send(req.body);
-        return [2];
     });
 }); };
 exports.getUserData = function (req, res) { return __awaiter(void 0, void 0, void 0, function () {

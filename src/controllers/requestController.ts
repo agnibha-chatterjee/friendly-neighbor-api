@@ -6,6 +6,7 @@ import { deletePhotos } from '../utils/detelePhotos';
 import { client } from '../grpc/grpc-client';
 import { FindNearbyRequests } from '../types/types';
 import User from '../db/models/User';
+import { cloudinaryApi } from '../utils/cloudinaryConfig';
 
 export const getFilteredRequests = async (req: Req, res: Response) => {
     const { userId } = req.params;
@@ -14,6 +15,9 @@ export const getFilteredRequests = async (req: Req, res: Response) => {
         { userId },
         async (err: string, data: FindNearbyRequests) => {
             if (err) console.log(err);
+            if (!data.requests.length) {
+                return res.status(200).send(data.requests);
+            }
             const { requests } = data;
             requests.map(async ({ postId, distance }) => {
                 const request = await Request.findOne({
@@ -27,8 +31,6 @@ export const getFilteredRequests = async (req: Req, res: Response) => {
                     distance: Math.ceil(distance),
                 });
                 if (fetchedRequests.length === requests.length) {
-                    res.status(200).send(fetchedRequests);
-                } else if (fetchedRequests.length === 0) {
                     res.status(200).send(fetchedRequests);
                 }
             });
@@ -59,7 +61,7 @@ export const createRequest = async (req: Req, res: Response) => {
             JSON.stringify(user?.defaultLocation) === JSON.stringify(location)
         ) {
             client.forwardRequestNearbyDefaultLocation(
-                { userId, location, radius: searchRadius, postId: reqUID },
+                { userId, radius: searchRadius, postId: reqUID },
                 (err: any, data: { success: boolean }) => {
                     if (err) throw err;
                     if (data.success) {
@@ -91,6 +93,10 @@ export const deleteRequest = async (req: Req, res: Response) => {
             success: true,
             message: 'request was successfully deleted',
         });
+        const deletedImages = deletedRequest.images.map(
+            (img) => `requests/${img.name}`
+        );
+        await cloudinaryApi.delete_resources(deletedImages);
         const user = await User.findById(deletedRequest.requestedBy);
         const { location, searchRadius, reqUID } = deletedRequest;
         client.deleteRequest(

@@ -7,6 +7,7 @@ import { resolve } from 'path';
 import { compressImage } from '../utils/compressImage';
 import { deletePhotos } from '../utils/detelePhotos';
 import moment from 'moment';
+import { client } from '../grpc/grpc-client';
 
 interface LoginOrSignUpData {
     idToken: string;
@@ -26,14 +27,15 @@ interface RegisterUserData {
     defaultSearchRadius: number;
 }
 
-const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
+const Gclient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 export const loginOrSignUp = async (
     req: CustomRequest<LoginOrSignUpData, {}>,
     res: Response
 ) => {
     const { idToken } = req.body;
-    const ticket = await client.verifyIdToken({
+
+    const ticket = await Gclient.verifyIdToken({
         idToken,
         audience: process.env.GOOGLE_CLIENT_ID!,
     });
@@ -73,6 +75,19 @@ export const registerUser = async (
         $set: { address, defaultLocation, defaultSearchRadius, contactNumber },
     });
     res.status(201).send(registeredUser);
+    client.saveUserLocation(
+        {
+            userId: registeredUser?.uid,
+            location: registeredUser?.defaultLocation,
+            radius: defaultSearchRadius,
+        },
+        (err: any, data: { success: boolean }) => {
+            if (err) throw err;
+            if (data.success) {
+                res.end();
+            }
+        }
+    );
 };
 
 export const updateProfile = async (req: Request, res: Response) => {
@@ -153,11 +168,19 @@ export const updateProfile = async (req: Request, res: Response) => {
             }
         );
     }
-};
-
-export const postUserCoordinates = async (req: Request, res: Response) => {
-    console.log(req.body);
-    res.status(200).send(req.body);
+    client.saveUserLocation(
+        {
+            userId: user?.uid,
+            location: defaultLocation,
+            radius: defaultSearchRadius,
+        },
+        (err: any, data: { success: boolean }) => {
+            if (err) throw err;
+            if (data.success) {
+                res.end();
+            }
+        }
+    );
 };
 
 export const getUserData = async (req: Request, res: Response) => {
@@ -165,5 +188,3 @@ export const getUserData = async (req: Request, res: Response) => {
     const user = await User.findById(userId, { address: 0 });
     res.status(200).send(user);
 };
-
-//{"error":"You can change your name every 365 days. Please try again!"}

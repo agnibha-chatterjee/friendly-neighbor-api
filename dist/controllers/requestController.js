@@ -46,6 +46,7 @@ var Request_1 = __importDefault(require("../db/models/Request"));
 var detelePhotos_1 = require("../utils/detelePhotos");
 var grpc_client_1 = require("../grpc/grpc-client");
 var User_1 = __importDefault(require("../db/models/User"));
+var cloudinaryConfig_1 = require("../utils/cloudinaryConfig");
 exports.getFilteredRequests = function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
     var userId, fetchedRequests;
     return __generator(this, function (_a) {
@@ -56,6 +57,9 @@ exports.getFilteredRequests = function (req, res) { return __awaiter(void 0, voi
             return __generator(this, function (_a) {
                 if (err)
                     console.log(err);
+                if (!data.requests.length) {
+                    return [2, res.status(200).send(data.requests)];
+                }
                 requests = data.requests;
                 requests.map(function (_a) {
                     var postId = _a.postId, distance = _a.distance;
@@ -76,9 +80,6 @@ exports.getFilteredRequests = function (req, res) { return __awaiter(void 0, voi
                                         distance: Math.ceil(distance),
                                     });
                                     if (fetchedRequests.length === requests.length) {
-                                        res.status(200).send(fetchedRequests);
-                                    }
-                                    else if (fetchedRequests.length === 0) {
                                         res.status(200).send(fetchedRequests);
                                     }
                                     return [2];
@@ -121,7 +122,7 @@ exports.createRequest = function (req, res) { return __awaiter(void 0, void 0, v
                 user = _a.sent();
                 location_1 = newRequest.location, searchRadius = newRequest.searchRadius, reqUID = newRequest.reqUID;
                 if (JSON.stringify(user === null || user === void 0 ? void 0 : user.defaultLocation) === JSON.stringify(location_1)) {
-                    grpc_client_1.client.forwardRequestNearbyDefaultLocation({ userId: userId, location: location_1, radius: searchRadius, postId: reqUID }, function (err, data) {
+                    grpc_client_1.client.forwardRequestNearbyDefaultLocation({ userId: userId, radius: searchRadius, postId: reqUID }, function (err, data) {
                         if (err)
                             throw err;
                         if (data.success) {
@@ -147,7 +148,7 @@ exports.createRequest = function (req, res) { return __awaiter(void 0, void 0, v
     });
 }); };
 exports.deleteRequest = function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
-    var requestId, deletedRequest, user, location_2, searchRadius, reqUID;
+    var requestId, deletedRequest, deletedImages, user, location_2, searchRadius, reqUID;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
@@ -155,13 +156,17 @@ exports.deleteRequest = function (req, res) { return __awaiter(void 0, void 0, v
                 return [4, Request_1.default.findByIdAndDelete(requestId)];
             case 1:
                 deletedRequest = _a.sent();
-                if (!deletedRequest) return [3, 3];
+                if (!deletedRequest) return [3, 4];
                 res.status(200).send({
                     success: true,
                     message: 'request was successfully deleted',
                 });
-                return [4, User_1.default.findById(deletedRequest.requestedBy)];
+                deletedImages = deletedRequest.images.map(function (img) { return "requests/" + img.name; });
+                return [4, cloudinaryConfig_1.cloudinaryApi.delete_resources(deletedImages)];
             case 2:
+                _a.sent();
+                return [4, User_1.default.findById(deletedRequest.requestedBy)];
+            case 3:
                 user = _a.sent();
                 location_2 = deletedRequest.location, searchRadius = deletedRequest.searchRadius, reqUID = deletedRequest.reqUID;
                 grpc_client_1.client.deleteRequest({
@@ -177,14 +182,14 @@ exports.deleteRequest = function (req, res) { return __awaiter(void 0, void 0, v
                         res.end();
                     }
                 });
-                return [3, 4];
-            case 3:
+                return [3, 5];
+            case 4:
                 res.status(500).send({
                     success: false,
                     message: 'error deleting request',
                 });
-                _a.label = 4;
-            case 4: return [2];
+                _a.label = 5;
+            case 5: return [2];
         }
     });
 }); };
