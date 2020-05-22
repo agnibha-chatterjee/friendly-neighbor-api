@@ -9,11 +9,24 @@ import { initializeCloudinary } from './utils/cloudinaryConfig';
 import errorHandler from './middlewares/errorHandler';
 import userRouter from './routes/userRoutes';
 import requestRouter from './routes/requestRoutes';
+import fs from 'fs';
+import https from 'https';
 
 const app = express();
 
 connectDB();
 initializeCloudinary();
+
+const privateKey = fs.readFileSync('/etc/letsencrypt/live/fn.twodee.me/privkey.pem', 'utf8');
+const certificate = fs.readFileSync('/etc/letsencrypt/live/fn.twodee.me/cert.pem', 'utf8');
+const ca = fs.readFileSync('/etc/letsencrypt/live/fn.twodee.me/chain.pem', 'utf8');
+
+const credentials = {
+	key: privateKey,
+	cert: certificate,
+	ca: ca
+};
+
 
 if (process.env.NODE_ENV === 'development') {
     app.use(
@@ -34,7 +47,9 @@ app.use('/api/requests', requestRouter);
 app.use(errorHandler);
 
 const PORT = process.env.PORT || 5000;
-const server = app.listen(PORT, () =>
+const httpsServer = https.createServer(credentials, app);
+
+const server = httpsServer.listen(PORT, () =>
     console.log(`Server is  running on port ${PORT}`)
 );
 
