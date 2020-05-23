@@ -103,7 +103,7 @@ exports.registerUser = function (req, res) { return __awaiter(void 0, void 0, vo
                 res.status(201).send(registeredUser);
                 grpc_client_1.client.saveUserLocation({
                     userId: registeredUser === null || registeredUser === void 0 ? void 0 : registeredUser.uid,
-                    location: registeredUser === null || registeredUser === void 0 ? void 0 : registeredUser.defaultLocation,
+                    location: defaultLocation,
                     radius: defaultSearchRadius,
                 }, function (err, data) {
                     if (err)

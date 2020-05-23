@@ -78,7 +78,7 @@ export const registerUser = async (
     client.saveUserLocation(
         {
             userId: registeredUser?.uid,
-            location: registeredUser?.defaultLocation,
+            location: defaultLocation,
             radius: defaultSearchRadius,
         },
         (err: any, data: { success: boolean }) => {
