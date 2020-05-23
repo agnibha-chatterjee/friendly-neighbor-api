@@ -62,6 +62,7 @@ const RequestSchema = new Schema({
             imageURL: { type: String },
         },
     ],
+    respondedBy: { type: [String], default: [] },
 });
 
 export default model<RequestType>('request', RequestSchema);

@@ -5,6 +5,7 @@ import {
     getFilteredRequests,
     getRequestHistory,
     deleteRequest,
+    addUserToRespondedBy,
 } from '../controllers/requestController';
 import { upload } from '../utils/multerConfig';
 import authenticateUser from '../middlewares/authenticateUser';
@@ -29,5 +30,8 @@ requestRouter.route('/').post(
 );
 
 requestRouter.route('/:requestId').delete(authenticateUser, deleteRequest);
+requestRouter
+    .route('/:requestId/respond/:userId')
+    .get(authenticateUser, addUserToRespondedBy);
 
 export default requestRouter;

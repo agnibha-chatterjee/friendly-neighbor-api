@@ -8,6 +8,7 @@ import { compressImage } from '../utils/compressImage';
 import { deletePhotos } from '../utils/detelePhotos';
 import moment from 'moment';
 import { client } from '../grpc/grpc-client';
+import parseJSON from 'parse-json';
 
 interface LoginOrSignUpData {
     idToken: string;
@@ -100,32 +101,10 @@ export const updateProfile = async (req: Request, res: Response) => {
         defaultSearchRadius,
         email,
     } = JSON.parse(req.body.data);
-    const user = await User.findById(userId);
-    if (name !== user?.name) {
-        if (user?.lastModified === '') {
-            await User.findByIdAndUpdate(userId, {
-                $set: { name, lastModified: moment().toISOString() },
-            });
-        } else {
-            const daysSinceLastEdit = moment().diff(
-                moment(user?.lastModified),
-                'days'
-            );
-            if (daysSinceLastEdit < 365) {
-                return res.send({
-                    error:
-                        'You can change your name every 365 days. Please try again!',
-                });
-            } else {
-                await User.findByIdAndUpdate(userId, {
-                    $set: { name, lastModified: moment().toISOString() },
-                });
-            }
-        }
-    }
-    if (!req.file) {
+    if (req.file === undefined) {
         await User.findByIdAndUpdate(userId, {
             $set: {
+                name,
                 email,
                 contactNumber,
                 defaultLocation,
@@ -156,6 +135,7 @@ export const updateProfile = async (req: Request, res: Response) => {
                     $set: {
                         profilePicture: result?.secure_url,
                         cloudinaryPublicId: result?.public_id,
+                        name,
                         email,
                         contactNumber,
                         defaultLocation,
@@ -167,6 +147,7 @@ export const updateProfile = async (req: Request, res: Response) => {
             }
         );
     }
+    const user = await User.findById(userId);
     client.saveUserLocation(
         {
             userId: user?.uid,

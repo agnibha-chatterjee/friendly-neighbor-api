@@ -132,3 +132,14 @@ export const getRequestHistory = async (req: Req, res: Response) => {
     const requests = await Request.find({ requestedBy: userId });
     res.status(200).send(requests);
 };
+
+export const addUserToRespondedBy = async (req: Req, res: Response) => {
+    const { userId, requestId } = req.params;
+    await Request.findOneAndUpdate(
+        { reqUID: requestId },
+        {
+            $addToSet: { respondedBy: userId },
+        }
+    );
+    res.status(200).send({ success: true });
+};

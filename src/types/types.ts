@@ -23,7 +23,7 @@ export interface User extends Document {
     };
     defaultSearchRadius: number;
     lastModified: Date | string;
-    canChangeName:boolean
+    canChangeName: boolean;
 }
 
 export interface RequestType extends Document {
@@ -43,6 +43,7 @@ export interface RequestType extends Document {
     cost: number;
     reqUID: string;
     distance: number;
+    respondedBy: Array<string>;
 }
 
 export interface CustomRequest<T, S> extends Request {

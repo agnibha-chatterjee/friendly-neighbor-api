@@ -17,30 +17,30 @@ const app = express();
 connectDB();
 initializeCloudinary();
 
-const privateKey = fs.readFileSync(
-    '/etc/letsencrypt/live/fn.twodee.me/privkey.pem',
-    'utf8'
-);
-const certificate = fs.readFileSync(
-    '/etc/letsencrypt/live/fn.twodee.me/cert.pem',
-    'utf8'
-);
-const ca = fs.readFileSync(
-    '/etc/letsencrypt/live/fn.twodee.me/chain.pem',
-    'utf8'
-);
+// const privateKey = fs.readFileSync(
+//     '/etc/letsencrypt/live/fn.twodee.me/privkey.pem',
+//     'utf8'
+// );
+// const certificate = fs.readFileSync(
+//     '/etc/letsencrypt/live/fn.twodee.me/cert.pem',
+//     'utf8'
+// );
+// const ca = fs.readFileSync(
+//     '/etc/letsencrypt/live/fn.twodee.me/chain.pem',
+//     'utf8'
+// );
 
-const credentials = {
-    key: privateKey,
-    cert: certificate,
-    ca: ca,
-};
+// const credentials = {
+//     key: privateKey,
+//     cert: certificate,
+//     ca: ca,
+// };
 
-app.use(
-    morgan(
-        ':remote-addr - :remote-user [:date[clf]] ":method :url HTTP/:http-version" :status :res[content-length]'
-    )
-);
+// app.use(
+//     morgan(
+//         ':remote-addr - :remote-user [:date[clf]] ":method :url HTTP/:http-version" :status :res[content-length]'
+//     )
+// );
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -53,9 +53,9 @@ app.use('/api/requests', requestRouter);
 app.use(errorHandler);
 
 const PORT = process.env.PORT || 5000;
-const httpsServer = https.createServer(credentials, app);
+// const httpsServer = https.createServer(credentials, app);
 
-const server = httpsServer.listen(PORT, () =>
+const server = app.listen(PORT, () =>
     console.log(`Server is  running on port ${PORT}`)
 );
 

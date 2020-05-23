@@ -117,39 +117,16 @@ exports.registerUser = function (req, res) { return __awaiter(void 0, void 0, vo
     });
 }); };
 exports.updateProfile = function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
-    var userId, _a, name, contactNumber, address, defaultLocation, defaultSearchRadius, email, user, daysSinceLastEdit;
+    var userId, _a, name, contactNumber, address, defaultLocation, defaultSearchRadius, email, user;
     return __generator(this, function (_b) {
         switch (_b.label) {
             case 0:
                 userId = req.params.userId;
                 _a = JSON.parse(req.body.data), name = _a.name, contactNumber = _a.contactNumber, address = _a.address, defaultLocation = _a.defaultLocation, defaultSearchRadius = _a.defaultSearchRadius, email = _a.email;
-                return [4, User_1.default.findById(userId)];
-            case 1:
-                user = _b.sent();
-                if (!(name !== (user === null || user === void 0 ? void 0 : user.name))) return [3, 6];
-                if (!((user === null || user === void 0 ? void 0 : user.lastModified) === '')) return [3, 3];
-                return [4, User_1.default.findByIdAndUpdate(userId, {
-                        $set: { name: name, lastModified: moment_1.default().toISOString() },
-                    })];
-            case 2:
-                _b.sent();
-                return [3, 6];
-            case 3:
-                daysSinceLastEdit = moment_1.default().diff(moment_1.default(user === null || user === void 0 ? void 0 : user.lastModified), 'days');
-                if (!(daysSinceLastEdit < 365)) return [3, 4];
-                return [2, res.send({
-                        error: 'You can change your name every 365 days. Please try again!',
-                    })];
-            case 4: return [4, User_1.default.findByIdAndUpdate(userId, {
-                    $set: { name: name, lastModified: moment_1.default().toISOString() },
-                })];
-            case 5:
-                _b.sent();
-                _b.label = 6;
-            case 6:
-                if (!!req.file) return [3, 8];
+                if (!(req.file === undefined)) return [3, 2];
                 return [4, User_1.default.findByIdAndUpdate(userId, {
                         $set: {
+                            name: name,
                             email: email,
                             contactNumber: contactNumber,
                             defaultLocation: defaultLocation,
@@ -157,11 +134,11 @@ exports.updateProfile = function (req, res) { return __awaiter(void 0, void 0, v
                             address: address,
                         },
                     })];
-            case 7:
+            case 1:
                 _b.sent();
                 return [2, res.status(200).send({ success: true })];
-            case 8: return [4, compressImage_1.compressImage(userId, req.file)];
-            case 9:
+            case 2: return [4, compressImage_1.compressImage(userId, req.file)];
+            case 3:
                 _b.sent();
                 cloudinaryConfig_1.uploader.upload(path_1.resolve(__dirname, "../../uploads/" + userId + "-" + req.file.originalname + ".jpeg"), {
                     resource_type: 'image',
@@ -181,6 +158,7 @@ exports.updateProfile = function (req, res) { return __awaiter(void 0, void 0, v
                                         $set: {
                                             profilePicture: result === null || result === void 0 ? void 0 : result.secure_url,
                                             cloudinaryPublicId: result === null || result === void 0 ? void 0 : result.public_id,
+                                            name: name,
                                             email: email,
                                             contactNumber: contactNumber,
                                             defaultLocation: defaultLocation,
@@ -195,8 +173,10 @@ exports.updateProfile = function (req, res) { return __awaiter(void 0, void 0, v
                         }
                     });
                 }); });
-                _b.label = 10;
-            case 10:
+                _b.label = 4;
+            case 4: return [4, User_1.default.findById(userId)];
+            case 5:
+                user = _b.sent();
                 grpc_client_1.client.saveUserLocation({
                     userId: user === null || user === void 0 ? void 0 : user.uid,
                     location: defaultLocation,
