@@ -62,5 +62,6 @@ var RequestSchema = new mongoose_1.Schema({
             imageURL: { type: String },
         },
     ],
+    respondedBy: { type: [String], default: [] },
 });
 exports.default = mongoose_1.model('request', RequestSchema);

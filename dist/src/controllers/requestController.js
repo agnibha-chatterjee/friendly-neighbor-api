@@ -39,7 +39,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getRequestHistory = exports.deleteRequest = exports.createRequest = exports.getFilteredRequests = void 0;
+exports.addUserToRespondedBy = exports.getRequestHistory = exports.deleteRequest = exports.createRequest = exports.getFilteredRequests = void 0;
 var path_1 = require("path");
 var uploadRequestImages_1 = require("../utils/uploadRequestImages");
 var Request_1 = __importDefault(require("../db/models/Request"));
@@ -202,6 +202,22 @@ exports.getRequestHistory = function (req, res) { return __awaiter(void 0, void 
             case 1:
                 requests = _a.sent();
                 res.status(200).send(requests);
+                return [2];
+        }
+    });
+}); };
+exports.addUserToRespondedBy = function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
+    var _a, userId, requestId;
+    return __generator(this, function (_b) {
+        switch (_b.label) {
+            case 0:
+                _a = req.params, userId = _a.userId, requestId = _a.requestId;
+                return [4, Request_1.default.findOneAndUpdate({ reqUID: requestId }, {
+                        $addToSet: { respondedBy: userId },
+                    })];
+            case 1:
+                _b.sent();
+                res.status(200).send({ success: true });
                 return [2];
         }
     });

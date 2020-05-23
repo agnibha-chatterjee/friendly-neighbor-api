@@ -21,4 +21,7 @@ requestRouter.route('/').post(authenticateUser_1.default, multerConfig_1.upload.
     { name: 'image3', maxCount: 1 },
 ]), express_async_handler_1.default(requestController_1.createRequest));
 requestRouter.route('/:requestId').delete(authenticateUser_1.default, requestController_1.deleteRequest);
+requestRouter
+    .route('/:requestId/respond/:userId')
+    .get(authenticateUser_1.default, requestController_1.addUserToRespondedBy);
 exports.default = requestRouter;

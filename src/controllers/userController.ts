@@ -100,8 +100,31 @@ export const updateProfile = async (req: Request, res: Response) => {
         defaultLocation,
         defaultSearchRadius,
         email,
-    } = JSON.parse(req.body.data);
-    if (req.file === undefined) {
+    } = req.file ? JSON.parse(req.body.data) : req.body;
+    const user = await User.findById(userId);
+    if (name !== user?.name) {
+        if (user?.lastModified === '') {
+            await User.findByIdAndUpdate(userId, {
+                $set: { name, lastModified: moment().toISOString() },
+            });
+        } else {
+            const daysSinceLastEdit = moment().diff(
+                moment(user?.lastModified),
+                'days'
+            );
+            if (daysSinceLastEdit < 365) {
+                return res.send({
+                    error:
+                        'You can change your name every 365 days. Please try again!',
+                });
+            } else {
+                await User.findByIdAndUpdate(userId, {
+                    $set: { name, lastModified: moment().toISOString() },
+                });
+            }
+        }
+    }
+    if (!req.file) {
         await User.findByIdAndUpdate(userId, {
             $set: {
                 name,
@@ -147,7 +170,6 @@ export const updateProfile = async (req: Request, res: Response) => {
             }
         );
     }
-    const user = await User.findById(userId);
     client.saveUserLocation(
         {
             userId: user?.uid,

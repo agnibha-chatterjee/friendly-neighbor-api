@@ -122,7 +122,7 @@ exports.updateProfile = function (req, res) { return __awaiter(void 0, void 0, v
         switch (_b.label) {
             case 0:
                 userId = req.params.userId;
-                _a = JSON.parse(req.body.data), name = _a.name, contactNumber = _a.contactNumber, address = _a.address, defaultLocation = _a.defaultLocation, defaultSearchRadius = _a.defaultSearchRadius, email = _a.email;
+                _a = req.file ? JSON.parse(req.body.data) : req.body, name = _a.name, contactNumber = _a.contactNumber, address = _a.address, defaultLocation = _a.defaultLocation, defaultSearchRadius = _a.defaultSearchRadius, email = _a.email;
                 return [4, User_1.default.findById(userId)];
             case 1:
                 user = _b.sent();
@@ -150,6 +150,7 @@ exports.updateProfile = function (req, res) { return __awaiter(void 0, void 0, v
                 if (!!req.file) return [3, 8];
                 return [4, User_1.default.findByIdAndUpdate(userId, {
                         $set: {
+                            name: name,
                             email: email,
                             contactNumber: contactNumber,
                             defaultLocation: defaultLocation,
@@ -181,6 +182,7 @@ exports.updateProfile = function (req, res) { return __awaiter(void 0, void 0, v
                                         $set: {
                                             profilePicture: result === null || result === void 0 ? void 0 : result.secure_url,
                                             cloudinaryPublicId: result === null || result === void 0 ? void 0 : result.public_id,
+                                            name: name,
                                             email: email,
                                             contactNumber: contactNumber,
                                             defaultLocation: defaultLocation,
