@@ -99,7 +99,7 @@ export const updateProfile = async (req: Request, res: Response) => {
         defaultLocation,
         defaultSearchRadius,
         email,
-    } = JSON.parse(req.body.data);
+    } = req.file ? JSON.parse(req.body.data) : req.body;
     const user = await User.findById(userId);
     if (name !== user?.name) {
         if (user?.lastModified === '') {
