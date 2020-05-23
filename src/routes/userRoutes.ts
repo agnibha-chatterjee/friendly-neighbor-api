@@ -7,14 +7,17 @@ import {
     updateProfile,
 } from '../controllers/userController';
 import { upload } from '../utils/multerConfig';
+import authenticateUser from '../middlewares/authenticateUser';
 
 const userRouter = Router();
 
 userRouter.route('/login').post(asyncHandler(loginOrSignUp));
-userRouter.route('/register').post(asyncHandler(registerUser));
+userRouter
+    .route('/register')
+    .post(authenticateUser, asyncHandler(registerUser));
 userRouter
     .route('/:userId')
-    .get(getUserData)
-    .put(upload.single('image'), asyncHandler(updateProfile));
+    .get(authenticateUser, getUserData)
+    .put(authenticateUser, upload.single('image'), asyncHandler(updateProfile));
 
 export default userRouter;

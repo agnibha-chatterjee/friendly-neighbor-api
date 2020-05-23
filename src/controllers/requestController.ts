@@ -14,7 +14,7 @@ export const getFilteredRequests = async (req: Req, res: Response) => {
     client.fetchRequestsNearby(
         { userId },
         async (err: string, data: FindNearbyRequests) => {
-            if (err) console.log(err);
+            if (err) return res.status(500).send({ err });
             if (!data.requests.length) {
                 return res.status(200).send(data.requests);
             }
@@ -63,9 +63,12 @@ export const createRequest = async (req: Req, res: Response) => {
             client.forwardRequestNearbyDefaultLocation(
                 { userId, radius: searchRadius, postId: reqUID },
                 (err: any, data: { success: boolean }) => {
-                    if (err) throw err;
+                    if (err) console.log(`ERROR - ${err}`);
                     if (data.success) {
-                        res.end();
+                        console.log(
+                            `Created Req(default location) ${reqUID}`,
+                            data
+                        );
                     }
                 }
             );
@@ -73,9 +76,12 @@ export const createRequest = async (req: Req, res: Response) => {
             client.forwardRequestNearbyCustomLocation(
                 { userId, location, radius: searchRadius, postId: reqUID },
                 (err: any, data: { success: boolean }) => {
-                    if (err) throw err;
+                    if (err) console.log(`ERROR - ${err}`);
                     if (data.success) {
-                        res.end();
+                        console.log(
+                            `Created Req(custom location) ${reqUID}`,
+                            data
+                        );
                     }
                 }
             );
@@ -107,10 +113,9 @@ export const deleteRequest = async (req: Req, res: Response) => {
                 postId: reqUID,
             },
             (err: any, data: { success: boolean }) => {
-                if (err) throw err;
-                console.log(data);
+                if (err) console.log(`ERROR - ${err}`);
                 if (data.success) {
-                    res.end();
+                    console.log(`Deleted request ${reqUID}`, data);
                 }
             }
         );

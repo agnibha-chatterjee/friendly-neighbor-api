@@ -82,9 +82,9 @@ export const registerUser = async (
             radius: defaultSearchRadius,
         },
         (err: any, data: { success: boolean }) => {
-            if (err) throw err;
+            if (err) console.log(`ERROR - ${err}`);
             if (data.success) {
-                res.end();
+                console.log(`Registered user ${registeredUser?.uid}`, data);
             }
         }
     );
@@ -112,7 +112,6 @@ export const updateProfile = async (req: Request, res: Response) => {
                 'days'
             );
             if (daysSinceLastEdit < 365) {
-                console.log('not allowed');
                 return res.send({
                     error:
                         'You can change your name every 365 days. Please try again!',
@@ -150,7 +149,7 @@ export const updateProfile = async (req: Request, res: Response) => {
             async (error, result) => {
                 if (error) throw error;
                 res.status(200).send({
-                    imageURL: result?.secure_url,
+                    profilePicture: result?.secure_url,
                     success: true,
                 });
                 await User.findByIdAndUpdate(userId, {
@@ -174,10 +173,10 @@ export const updateProfile = async (req: Request, res: Response) => {
             location: defaultLocation,
             radius: defaultSearchRadius,
         },
-        (err: any, data: { success: boolean }) => {
-            if (err) throw err;
+        (err: string, data: { success: boolean }) => {
+            if (err) console.log(`ERROR - ${err}`);
             if (data.success) {
-                res.end();
+                console.log(`Updated user - ${user?.uid}`, data);
             }
         }
     );
@@ -185,6 +184,18 @@ export const updateProfile = async (req: Request, res: Response) => {
 
 export const getUserData = async (req: Request, res: Response) => {
     const { userId } = req.params;
-    const user = await User.findById(userId, { address: 0 });
-    res.status(200).send(user);
+    const user = await User.findById(userId);
+    if (user?.lastModified === '') {
+        return res.status(200).send({ user, canChangeName: true });
+    } else {
+        const daysSinceLastEdit = moment().diff(
+            moment(user?.lastModified),
+            'days'
+        );
+        if (daysSinceLastEdit < 365) {
+            return res.status(200).send({ user, canChangeName: false });
+        } else {
+            return res.status(200).send({ user, canChangeName: true });
+        }
+    }
 };
