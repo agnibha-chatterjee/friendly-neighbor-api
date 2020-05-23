@@ -8,7 +8,6 @@ import { compressImage } from '../utils/compressImage';
 import { deletePhotos } from '../utils/detelePhotos';
 import moment from 'moment';
 import { client } from '../grpc/grpc-client';
-import parseJSON from 'parse-json';
 
 interface LoginOrSignUpData {
     idToken: string;

@@ -1,5 +1,4 @@
 import { Request, Response, NextFunction } from 'express';
-import { CustomRequest } from '../types/types';
 import User from '../db/models/User';
 
 const authenticateUser = async (

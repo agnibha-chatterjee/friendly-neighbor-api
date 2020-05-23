@@ -117,7 +117,7 @@ exports.registerUser = function (req, res) { return __awaiter(void 0, void 0, vo
     });
 }); };
 exports.updateProfile = function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
-    var userId, _a, name, contactNumber, address, defaultLocation, defaultSearchRadius, email, user;
+    var userId, _a, name, contactNumber, address, defaultLocation, defaultSearchRadius, email, user, daysSinceLastEdit;
     return __generator(this, function (_b) {
         switch (_b.label) {
             case 0:
@@ -158,11 +158,11 @@ exports.updateProfile = function (req, res) { return __awaiter(void 0, void 0, v
                             address: address,
                         },
                     })];
-            case 1:
+            case 7:
                 _b.sent();
                 return [2, res.status(200).send({ success: true })];
-            case 2: return [4, compressImage_1.compressImage(userId, req.file)];
-            case 3:
+            case 8: return [4, compressImage_1.compressImage(userId, req.file)];
+            case 9:
                 _b.sent();
                 cloudinaryConfig_1.uploader.upload(path_1.resolve(__dirname, "../../uploads/" + userId + "-" + req.file.originalname + ".jpeg"), {
                     resource_type: 'image',
@@ -197,10 +197,8 @@ exports.updateProfile = function (req, res) { return __awaiter(void 0, void 0, v
                         }
                     });
                 }); });
-                _b.label = 4;
-            case 4: return [4, User_1.default.findById(userId)];
-            case 5:
-                user = _b.sent();
+                _b.label = 10;
+            case 10:
                 grpc_client_1.client.saveUserLocation({
                     userId: user === null || user === void 0 ? void 0 : user.uid,
                     location: defaultLocation,
