@@ -47,6 +47,7 @@ var detelePhotos_1 = require("../utils/detelePhotos");
 var grpc_client_1 = require("../grpc/grpc-client");
 var User_1 = __importDefault(require("../db/models/User"));
 var cloudinaryConfig_1 = require("../utils/cloudinaryConfig");
+var moment_1 = __importDefault(require("moment"));
 exports.getFilteredRequests = function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
     var userId, fetchedRequests;
     return __generator(this, function (_a) {
@@ -75,6 +76,9 @@ exports.getFilteredRequests = function (req, res) { return __awaiter(void 0, voi
                                     })];
                                 case 1:
                                     request = _b.sent();
+                                    request['createdAt'] = moment_1.default(request === null || request === void 0 ? void 0 : request.createdAt)
+                                        .add(330, 'minutes')
+                                        .toISOString();
                                     fetchedRequests.push({
                                         request: request,
                                         distance: Math.ceil(distance),

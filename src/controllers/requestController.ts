@@ -7,6 +7,7 @@ import { client } from '../grpc/grpc-client';
 import { FindNearbyRequests } from '../types/types';
 import User from '../db/models/User';
 import { cloudinaryApi } from '../utils/cloudinaryConfig';
+import moment from 'moment';
 
 export const getFilteredRequests = async (req: Req, res: Response) => {
     const { userId } = req.params;
@@ -26,6 +27,9 @@ export const getFilteredRequests = async (req: Req, res: Response) => {
                     path: 'requestedBy',
                     select: 'name email profilePicture',
                 });
+                request!['createdAt'] = moment(request?.createdAt)
+                    .add(330, 'minutes')
+                    .toISOString();
                 fetchedRequests.push({
                     request,
                     distance: Math.ceil(distance),

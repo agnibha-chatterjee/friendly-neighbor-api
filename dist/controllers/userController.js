@@ -117,12 +117,12 @@ exports.registerUser = function (req, res) { return __awaiter(void 0, void 0, vo
     });
 }); };
 exports.updateProfile = function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
-    var userId, _a, name, contactNumber, address, defaultLocation, defaultSearchRadius, email, user, daysSinceLastEdit;
+    var userId, _a, name, contactNumber, address, defaultLocation, defaultSearchRadius, user, daysSinceLastEdit;
     return __generator(this, function (_b) {
         switch (_b.label) {
             case 0:
                 userId = req.params.userId;
-                _a = req.file ? JSON.parse(req.body.data) : req.body, name = _a.name, contactNumber = _a.contactNumber, address = _a.address, defaultLocation = _a.defaultLocation, defaultSearchRadius = _a.defaultSearchRadius, email = _a.email;
+                _a = req.file ? JSON.parse(req.body.data) : req.body, name = _a.name, contactNumber = _a.contactNumber, address = _a.address, defaultLocation = _a.defaultLocation, defaultSearchRadius = _a.defaultSearchRadius;
                 return [4, User_1.default.findById(userId)];
             case 1:
                 user = _b.sent();
@@ -151,7 +151,6 @@ exports.updateProfile = function (req, res) { return __awaiter(void 0, void 0, v
                 return [4, User_1.default.findByIdAndUpdate(userId, {
                         $set: {
                             name: name,
-                            email: email,
                             contactNumber: contactNumber,
                             defaultLocation: defaultLocation,
                             defaultSearchRadius: defaultSearchRadius,
@@ -183,7 +182,6 @@ exports.updateProfile = function (req, res) { return __awaiter(void 0, void 0, v
                                             profilePicture: result === null || result === void 0 ? void 0 : result.secure_url,
                                             cloudinaryPublicId: result === null || result === void 0 ? void 0 : result.public_id,
                                             name: name,
-                                            email: email,
                                             contactNumber: contactNumber,
                                             defaultLocation: defaultLocation,
                                             defaultSearchRadius: defaultSearchRadius,

@@ -98,7 +98,6 @@ export const updateProfile = async (req: Request, res: Response) => {
         address,
         defaultLocation,
         defaultSearchRadius,
-        email,
     } = req.file ? JSON.parse(req.body.data) : req.body;
     const user = await User.findById(userId);
     if (name !== user?.name) {
@@ -127,7 +126,6 @@ export const updateProfile = async (req: Request, res: Response) => {
         await User.findByIdAndUpdate(userId, {
             $set: {
                 name,
-                email,
                 contactNumber,
                 defaultLocation,
                 defaultSearchRadius,
@@ -158,7 +156,6 @@ export const updateProfile = async (req: Request, res: Response) => {
                         profilePicture: result?.secure_url,
                         cloudinaryPublicId: result?.public_id,
                         name,
-                        email,
                         contactNumber,
                         defaultLocation,
                         defaultSearchRadius,
