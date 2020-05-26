@@ -134,7 +134,42 @@ export const deleteRequest = async (req: Req, res: Response) => {
 export const getRequestHistory = async (req: Req, res: Response) => {
     const { userId } = req.params;
     const requests = await Request.find({ requestedBy: userId });
-    res.status(200).send(requests);
+    let finalResponse: object[] = [];
+    let finalUsers: object[] = [];
+    if (requests.length === 0) {
+        return res.send(200).send([]);
+    } else {
+        const necessaryRequestData = requests.map(
+            ({ respondedBy, _id, title, createdAt, cost }) => ({
+                respondedBy,
+                _id,
+                cost,
+                createdAt: moment(createdAt).add(330, 'minutes').toISOString(),
+                title,
+            })
+        );
+        let finalData: object[] = [];
+        necessaryRequestData.forEach(
+            ({ respondedBy, _id, cost, createdAt, title }) => {
+                User.find({ _id: { $in: respondedBy } })
+                    .select('name email contactNumber')
+                    .exec(function (err, user) {
+                        if (err)
+                            return res.status(200).send({
+                                request: { _id, cost, createdAt, title },
+                                users: [],
+                            });
+                        finalData.push({
+                            request: { _id, cost, createdAt, title },
+                            users: user,
+                        });
+                        if (finalData.length === requests.length) {
+                            res.status(200).send(finalData);
+                        }
+                    });
+            }
+        );
+    }
 };
 
 export const addUserToRespondedBy = async (req: Req, res: Response) => {

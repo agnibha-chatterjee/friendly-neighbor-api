@@ -3,6 +3,9 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var mongoose_1 = require("mongoose");
 var shortid_1 = require("shortid");
 var RequestSchema = new mongoose_1.Schema({
+    requestType: {
+        type: { String: String },
+    },
     requestedBy: {
         type: mongoose_1.Schema.Types.ObjectId,
         required: [true, 'userId is required'],
@@ -63,5 +66,6 @@ var RequestSchema = new mongoose_1.Schema({
         },
     ],
     respondedBy: { type: [String], default: [] },
+    acceptedUser: { type: mongoose_1.Schema.Types.ObjectId, ref: 'user' },
 });
 exports.default = mongoose_1.model('request', RequestSchema);

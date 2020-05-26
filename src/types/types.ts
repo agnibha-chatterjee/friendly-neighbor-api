@@ -27,6 +27,7 @@ export interface User extends Document {
 }
 
 export interface RequestType extends Document {
+    requestType: string;
     requestedBy: string;
     title: string;
     description: string;
@@ -44,6 +45,7 @@ export interface RequestType extends Document {
     reqUID: string;
     distance: number;
     respondedBy: Array<string>;
+    acceptedUser: string;
 }
 
 export interface CustomRequest<T, S> extends Request {

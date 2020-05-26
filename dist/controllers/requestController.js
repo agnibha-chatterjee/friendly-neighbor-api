@@ -197,7 +197,7 @@ exports.deleteRequest = function (req, res) { return __awaiter(void 0, void 0, v
     });
 }); };
 exports.getRequestHistory = function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
-    var userId, requests;
+    var userId, requests, finalResponse, finalUsers, necessaryRequestData, finalData_1;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
@@ -205,7 +205,43 @@ exports.getRequestHistory = function (req, res) { return __awaiter(void 0, void 
                 return [4, Request_1.default.find({ requestedBy: userId })];
             case 1:
                 requests = _a.sent();
-                res.status(200).send(requests);
+                finalResponse = [];
+                finalUsers = [];
+                if (requests.length === 0) {
+                    return [2, res.send(200).send([])];
+                }
+                else {
+                    necessaryRequestData = requests.map(function (_a) {
+                        var respondedBy = _a.respondedBy, _id = _a._id, title = _a.title, createdAt = _a.createdAt, cost = _a.cost;
+                        return ({
+                            respondedBy: respondedBy,
+                            _id: _id,
+                            cost: cost,
+                            createdAt: moment_1.default(createdAt).add(330, 'minutes').toISOString(),
+                            title: title,
+                        });
+                    });
+                    finalData_1 = [];
+                    necessaryRequestData.forEach(function (_a) {
+                        var respondedBy = _a.respondedBy, _id = _a._id, cost = _a.cost, createdAt = _a.createdAt, title = _a.title;
+                        User_1.default.find({ _id: { $in: respondedBy } })
+                            .select('name email contactNumber')
+                            .exec(function (err, user) {
+                            if (err)
+                                return res.status(200).send({
+                                    request: { _id: _id, cost: cost, createdAt: createdAt, title: title },
+                                    users: [],
+                                });
+                            finalData_1.push({
+                                request: { _id: _id, cost: cost, createdAt: createdAt, title: title },
+                                users: user,
+                            });
+                            if (finalData_1.length === requests.length) {
+                                res.status(200).send(finalData_1);
+                            }
+                        });
+                    });
+                }
                 return [2];
         }
     });

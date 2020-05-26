@@ -3,6 +3,9 @@ import { RequestType } from '../../types/types';
 import { generate } from 'shortid';
 
 const RequestSchema = new Schema({
+    requestType: {
+        type: { String },
+    },
     requestedBy: {
         type: Schema.Types.ObjectId,
         required: [true, 'userId is required'],
@@ -63,6 +66,7 @@ const RequestSchema = new Schema({
         },
     ],
     respondedBy: { type: [String], default: [] },
+    acceptedUser: { type: Schema.Types.ObjectId, ref: 'user' },
 });
 
 export default model<RequestType>('request', RequestSchema);
