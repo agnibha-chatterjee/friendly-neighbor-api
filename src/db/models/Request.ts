@@ -1,6 +1,5 @@
 import { Schema, model } from 'mongoose';
 import { RequestType } from '../../types/types';
-import { generate } from 'shortid';
 
 const RequestSchema = new Schema({
     requestType: {

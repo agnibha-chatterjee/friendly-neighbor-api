@@ -1,6 +1,5 @@
 import { Schema, model } from 'mongoose';
 import { User } from '../../types/types';
-import { generate } from 'shortid';
 
 const UserSchema = new Schema({
     name: {
