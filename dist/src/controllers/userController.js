@@ -102,14 +102,14 @@ exports.registerUser = function (req, res) { return __awaiter(void 0, void 0, vo
                 registeredUser = _b.sent();
                 res.status(201).send(registeredUser);
                 grpc_client_1.client.saveUserLocation({
-                    userId: registeredUser === null || registeredUser === void 0 ? void 0 : registeredUser.uid,
-                    location: registeredUser === null || registeredUser === void 0 ? void 0 : registeredUser.defaultLocation,
+                    userId: registeredUser === null || registeredUser === void 0 ? void 0 : registeredUser._id,
+                    location: defaultLocation,
                     radius: defaultSearchRadius,
                 }, function (err, data) {
                     if (err)
                         console.log("ERROR - " + err);
                     if (data.success) {
-                        console.log("Registered user " + (registeredUser === null || registeredUser === void 0 ? void 0 : registeredUser.uid), data);
+                        console.log("Registered user " + (registeredUser === null || registeredUser === void 0 ? void 0 : registeredUser._id), data);
                     }
                 });
                 return [2];
@@ -117,12 +117,12 @@ exports.registerUser = function (req, res) { return __awaiter(void 0, void 0, vo
     });
 }); };
 exports.updateProfile = function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
-    var userId, _a, name, contactNumber, address, defaultLocation, defaultSearchRadius, email, user, daysSinceLastEdit;
+    var userId, _a, name, contactNumber, address, defaultLocation, defaultSearchRadius, user, daysSinceLastEdit;
     return __generator(this, function (_b) {
         switch (_b.label) {
             case 0:
                 userId = req.params.userId;
-                _a = req.file ? JSON.parse(req.body.data) : req.body, name = _a.name, contactNumber = _a.contactNumber, address = _a.address, defaultLocation = _a.defaultLocation, defaultSearchRadius = _a.defaultSearchRadius, email = _a.email;
+                _a = req.file ? JSON.parse(req.body.data) : req.body, name = _a.name, contactNumber = _a.contactNumber, address = _a.address, defaultLocation = _a.defaultLocation, defaultSearchRadius = _a.defaultSearchRadius;
                 return [4, User_1.default.findById(userId)];
             case 1:
                 user = _b.sent();
@@ -151,7 +151,6 @@ exports.updateProfile = function (req, res) { return __awaiter(void 0, void 0, v
                 return [4, User_1.default.findByIdAndUpdate(userId, {
                         $set: {
                             name: name,
-                            email: email,
                             contactNumber: contactNumber,
                             defaultLocation: defaultLocation,
                             defaultSearchRadius: defaultSearchRadius,
@@ -183,7 +182,6 @@ exports.updateProfile = function (req, res) { return __awaiter(void 0, void 0, v
                                             profilePicture: result === null || result === void 0 ? void 0 : result.secure_url,
                                             cloudinaryPublicId: result === null || result === void 0 ? void 0 : result.public_id,
                                             name: name,
-                                            email: email,
                                             contactNumber: contactNumber,
                                             defaultLocation: defaultLocation,
                                             defaultSearchRadius: defaultSearchRadius,
@@ -200,14 +198,14 @@ exports.updateProfile = function (req, res) { return __awaiter(void 0, void 0, v
                 _b.label = 10;
             case 10:
                 grpc_client_1.client.saveUserLocation({
-                    userId: user === null || user === void 0 ? void 0 : user.uid,
+                    userId: user === null || user === void 0 ? void 0 : user._id,
                     location: defaultLocation,
                     radius: defaultSearchRadius,
                 }, function (err, data) {
                     if (err)
                         console.log("ERROR - " + err);
                     if (data.success) {
-                        console.log("Updated user - " + (user === null || user === void 0 ? void 0 : user.uid), data);
+                        console.log("Updated user - " + (user === null || user === void 0 ? void 0 : user._id), data);
                     }
                 });
                 return [2];

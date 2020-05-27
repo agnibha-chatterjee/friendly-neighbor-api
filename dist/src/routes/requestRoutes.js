@@ -23,5 +23,7 @@ requestRouter.route('/').post(authenticateUser_1.default, multerConfig_1.upload.
 requestRouter.route('/:requestId').delete(authenticateUser_1.default, requestController_1.deleteRequest);
 requestRouter
     .route('/:requestId/respond/:userId')
-    .get(authenticateUser_1.default, requestController_1.addUserToRespondedBy);
+    .get(authenticateUser_1.default, requestController_1.addUserToRespondedBy)
+    .patch(authenticateUser_1.default, requestController_1.acceptUserThatResponded)
+    .delete(authenticateUser_1.default, requestController_1.removeUserThatResponded);
 exports.default = requestRouter;

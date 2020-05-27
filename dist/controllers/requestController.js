@@ -106,10 +106,10 @@ exports.createRequest = function (req, res) { return __awaiter(void 0, void 0, v
         switch (_a.label) {
             case 0:
                 files = [];
-                data = JSON.parse(req.body.data);
+                data = req.files ? JSON.parse(req.body.data) : req.body;
                 data['location'] = JSON.parse(data['location']);
                 data['cost'] = parseInt(data['cost']);
-                userId = req.body.uid;
+                userId = data['requestedBy'];
                 return [4, Request_1.default.create(data)];
             case 1:
                 newRequest = _a.sent();

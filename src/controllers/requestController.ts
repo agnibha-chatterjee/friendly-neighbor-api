@@ -46,10 +46,10 @@ export const getFilteredRequests = async (req: Req, res: Response) => {
 
 export const createRequest = async (req: Req, res: Response) => {
     let files: Express.Multer.File[] = [];
-    const data = JSON.parse(req.body.data);
+    const data = req.files ? JSON.parse(req.body.data) : req.body;
     data['location'] = JSON.parse(data['location']);
     data['cost'] = parseInt(data['cost']);
-    const userId = req.body.uid;
+    const userId = data['requestedBy'];
     const newRequest = await Request.create(data);
     if (newRequest._id) {
         res.status(201).send(newRequest);
