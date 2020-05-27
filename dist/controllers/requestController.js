@@ -39,7 +39,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.addUserToRespondedBy = exports.getRequestHistory = exports.deleteRequest = exports.createRequest = exports.getFilteredRequests = void 0;
+exports.removeUserThatResponded = exports.acceptUserThatResponded = exports.addUserToRespondedBy = exports.getRequestHistory = exports.deleteRequest = exports.createRequest = exports.getFilteredRequests = void 0;
 var path_1 = require("path");
 var uploadRequestImages_1 = require("../utils/uploadRequestImages");
 var Request_1 = __importDefault(require("../db/models/Request"));
@@ -69,7 +69,8 @@ exports.getFilteredRequests = function (req, res) { return __awaiter(void 0, voi
                         return __generator(this, function (_b) {
                             switch (_b.label) {
                                 case 0: return [4, Request_1.default.findOne({
-                                        reqUID: postId,
+                                        _id: postId,
+                                        completed: false,
                                     }).populate({
                                         path: 'requestedBy',
                                         select: 'name email profilePicture',
@@ -98,7 +99,7 @@ exports.getFilteredRequests = function (req, res) { return __awaiter(void 0, voi
     });
 }); };
 exports.createRequest = function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
-    var files, data, userId, newRequest, user, location_1, searchRadius, reqUID_1;
+    var files, data, userId, newRequest, user, location_1, searchRadius, _id_1;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
@@ -124,22 +125,22 @@ exports.createRequest = function (req, res) { return __awaiter(void 0, void 0, v
             case 3: return [4, User_1.default.findById(newRequest.requestedBy)];
             case 4:
                 user = _a.sent();
-                location_1 = newRequest.location, searchRadius = newRequest.searchRadius, reqUID_1 = newRequest.reqUID;
+                location_1 = newRequest.location, searchRadius = newRequest.searchRadius, _id_1 = newRequest._id;
                 if (JSON.stringify(user === null || user === void 0 ? void 0 : user.defaultLocation) === JSON.stringify(location_1)) {
-                    grpc_client_1.client.forwardRequestNearbyDefaultLocation({ userId: userId, radius: searchRadius, postId: reqUID_1 }, function (err, data) {
+                    grpc_client_1.client.forwardRequestNearbyDefaultLocation({ userId: userId, radius: searchRadius, postId: _id_1 }, function (err, data) {
                         if (err)
                             console.log("ERROR - " + err);
                         if (data.success) {
-                            console.log("Created Req(default location) " + reqUID_1, data);
+                            console.log("Created Req(default location) " + _id_1, data);
                         }
                     });
                 }
                 else {
-                    grpc_client_1.client.forwardRequestNearbyCustomLocation({ userId: userId, location: location_1, radius: searchRadius, postId: reqUID_1 }, function (err, data) {
+                    grpc_client_1.client.forwardRequestNearbyCustomLocation({ userId: userId, location: location_1, radius: searchRadius, postId: _id_1 }, function (err, data) {
                         if (err)
                             console.log("ERROR - " + err);
                         if (data.success) {
-                            console.log("Created Req(custom location) " + reqUID_1, data);
+                            console.log("Created Req(custom location) " + _id_1, data);
                         }
                     });
                 }
@@ -152,7 +153,7 @@ exports.createRequest = function (req, res) { return __awaiter(void 0, void 0, v
     });
 }); };
 exports.deleteRequest = function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
-    var requestId, deletedRequest, deletedImages, user, location_2, searchRadius, reqUID_2;
+    var requestId, deletedRequest, deletedImages, user, location_2, searchRadius, _id_2;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
@@ -172,17 +173,17 @@ exports.deleteRequest = function (req, res) { return __awaiter(void 0, void 0, v
                 return [4, User_1.default.findById(deletedRequest.requestedBy)];
             case 3:
                 user = _a.sent();
-                location_2 = deletedRequest.location, searchRadius = deletedRequest.searchRadius, reqUID_2 = deletedRequest.reqUID;
+                location_2 = deletedRequest.location, searchRadius = deletedRequest.searchRadius, _id_2 = deletedRequest._id;
                 grpc_client_1.client.deleteRequest({
-                    userId: user === null || user === void 0 ? void 0 : user.uid,
+                    userId: user === null || user === void 0 ? void 0 : user._id,
                     location: location_2,
                     radius: searchRadius,
-                    postId: reqUID_2,
+                    postId: _id_2,
                 }, function (err, data) {
                     if (err)
                         console.log("ERROR - " + err);
                     if (data.success) {
-                        console.log("Deleted request " + reqUID_2, data);
+                        console.log("Deleted request " + _id_2, data);
                     }
                 });
                 return [3, 5];
@@ -197,7 +198,7 @@ exports.deleteRequest = function (req, res) { return __awaiter(void 0, void 0, v
     });
 }); };
 exports.getRequestHistory = function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
-    var userId, requests, finalResponse, finalUsers, necessaryRequestData, finalData_1;
+    var userId, requests, necessaryRequestData, finalData_1;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
@@ -205,27 +206,28 @@ exports.getRequestHistory = function (req, res) { return __awaiter(void 0, void 
                 return [4, Request_1.default.find({ requestedBy: userId })];
             case 1:
                 requests = _a.sent();
-                finalResponse = [];
-                finalUsers = [];
                 if (requests.length === 0) {
                     return [2, res.send(200).send([])];
                 }
                 else {
                     necessaryRequestData = requests.map(function (_a) {
-                        var respondedBy = _a.respondedBy, _id = _a._id, title = _a.title, createdAt = _a.createdAt, cost = _a.cost;
+                        var respondedBy = _a.respondedBy, _id = _a._id, title = _a.title, createdAt = _a.createdAt, cost = _a.cost, requestType = _a.requestType, completed = _a.completed, acceptedUser = _a.acceptedUser;
                         return ({
                             respondedBy: respondedBy,
                             _id: _id,
                             cost: cost,
                             createdAt: moment_1.default(createdAt).add(330, 'minutes').toISOString(),
                             title: title,
+                            requestType: requestType,
+                            completed: completed,
+                            acceptedUser: acceptedUser,
                         });
                     });
                     finalData_1 = [];
                     necessaryRequestData.forEach(function (_a) {
-                        var respondedBy = _a.respondedBy, _id = _a._id, cost = _a.cost, createdAt = _a.createdAt, title = _a.title;
+                        var respondedBy = _a.respondedBy, _id = _a._id, cost = _a.cost, createdAt = _a.createdAt, title = _a.title, requestType = _a.requestType, completed = _a.completed, acceptedUser = _a.acceptedUser;
                         User_1.default.find({ _id: { $in: respondedBy } })
-                            .select('name email contactNumber')
+                            .select('name email contactNumber profilePicture')
                             .exec(function (err, user) {
                             if (err)
                                 return res.status(200).send({
@@ -233,7 +235,15 @@ exports.getRequestHistory = function (req, res) { return __awaiter(void 0, void 
                                     users: [],
                                 });
                             finalData_1.push({
-                                request: { _id: _id, cost: cost, createdAt: createdAt, title: title },
+                                request: {
+                                    _id: _id,
+                                    cost: cost,
+                                    createdAt: createdAt,
+                                    title: title,
+                                    requestType: requestType,
+                                    acceptedUser: acceptedUser,
+                                    completed: completed,
+                                },
                                 users: user,
                             });
                             if (finalData_1.length === requests.length) {
@@ -252,12 +262,51 @@ exports.addUserToRespondedBy = function (req, res) { return __awaiter(void 0, vo
         switch (_b.label) {
             case 0:
                 _a = req.params, userId = _a.userId, requestId = _a.requestId;
-                return [4, Request_1.default.findOneAndUpdate({ reqUID: requestId }, {
+                return [4, Request_1.default.findByIdAndUpdate(requestId, {
                         $addToSet: { respondedBy: userId },
                     })];
             case 1:
                 _b.sent();
                 res.status(200).send({ success: true });
+                return [2];
+        }
+    });
+}); };
+exports.acceptUserThatResponded = function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
+    var _a, userId, requestId;
+    return __generator(this, function (_b) {
+        switch (_b.label) {
+            case 0:
+                _a = req.params, userId = _a.userId, requestId = _a.requestId;
+                return [4, Request_1.default.findByIdAndUpdate(requestId, {
+                        $set: { completed: true, acceptedUser: userId },
+                    })];
+            case 1:
+                _b.sent();
+                res.status(200).send({
+                    success: true,
+                    message: "successfully accepted response of user " + userId,
+                });
+                return [2];
+        }
+    });
+}); };
+exports.removeUserThatResponded = function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
+    var _a, userId, requestId;
+    return __generator(this, function (_b) {
+        switch (_b.label) {
+            case 0:
+                _a = req.params, userId = _a.userId, requestId = _a.requestId;
+                return [4, Request_1.default.findByIdAndUpdate(requestId, {
+                        $set: { completed: false },
+                        $pull: { respondedBy: userId },
+                    })];
+            case 1:
+                _b.sent();
+                res.status(200).send({
+                    success: true,
+                    message: "successfully declined response of user " + userId,
+                });
                 return [2];
         }
     });

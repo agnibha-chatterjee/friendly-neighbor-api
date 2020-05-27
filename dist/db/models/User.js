@@ -1,7 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var mongoose_1 = require("mongoose");
-var shortid_1 = require("shortid");
 var UserSchema = new mongoose_1.Schema({
     name: {
         type: String,
@@ -19,11 +18,6 @@ var UserSchema = new mongoose_1.Schema({
         required: [true, 'googleId is required'],
         trim: true,
         unique: true,
-    },
-    uid: {
-        type: String,
-        unique: true,
-        default: shortid_1.generate,
     },
     profilePicture: {
         type: String,

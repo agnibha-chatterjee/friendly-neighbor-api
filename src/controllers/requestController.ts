@@ -22,7 +22,8 @@ export const getFilteredRequests = async (req: Req, res: Response) => {
             const { requests } = data;
             requests.map(async ({ postId, distance }) => {
                 const request = await Request.findOne({
-                    reqUID: postId,
+                    _id: postId,
+                    completed: false,
                 }).populate({
                     path: 'requestedBy',
                     select: 'name email profilePicture',
@@ -60,17 +61,17 @@ export const createRequest = async (req: Req, res: Response) => {
             deletePhotos(resolve(__dirname, `../../uploads/`));
         }
         const user = await User.findById(newRequest.requestedBy);
-        const { location, searchRadius, reqUID } = newRequest;
+        const { location, searchRadius, _id } = newRequest;
         if (
             JSON.stringify(user?.defaultLocation) === JSON.stringify(location)
         ) {
             client.forwardRequestNearbyDefaultLocation(
-                { userId, radius: searchRadius, postId: reqUID },
+                { userId, radius: searchRadius, postId: _id },
                 (err: any, data: { success: boolean }) => {
                     if (err) console.log(`ERROR - ${err}`);
                     if (data.success) {
                         console.log(
-                            `Created Req(default location) ${reqUID}`,
+                            `Created Req(default location) ${_id}`,
                             data
                         );
                     }
@@ -78,12 +79,12 @@ export const createRequest = async (req: Req, res: Response) => {
             );
         } else {
             client.forwardRequestNearbyCustomLocation(
-                { userId, location, radius: searchRadius, postId: reqUID },
+                { userId, location, radius: searchRadius, postId: _id },
                 (err: any, data: { success: boolean }) => {
                     if (err) console.log(`ERROR - ${err}`);
                     if (data.success) {
                         console.log(
-                            `Created Req(custom location) ${reqUID}`,
+                            `Created Req(custom location) ${_id}`,
                             data
                         );
                     }
@@ -108,18 +109,18 @@ export const deleteRequest = async (req: Req, res: Response) => {
         );
         await cloudinaryApi.delete_resources(deletedImages);
         const user = await User.findById(deletedRequest.requestedBy);
-        const { location, searchRadius, reqUID } = deletedRequest;
+        const { location, searchRadius, _id } = deletedRequest;
         client.deleteRequest(
             {
-                userId: user?.uid,
+                userId: user?._id,
                 location,
                 radius: searchRadius,
-                postId: reqUID,
+                postId: _id,
             },
             (err: any, data: { success: boolean }) => {
                 if (err) console.log(`ERROR - ${err}`);
                 if (data.success) {
-                    console.log(`Deleted request ${reqUID}`, data);
+                    console.log(`Deleted request ${_id}`, data);
                 }
             }
         );
@@ -134,25 +135,44 @@ export const deleteRequest = async (req: Req, res: Response) => {
 export const getRequestHistory = async (req: Req, res: Response) => {
     const { userId } = req.params;
     const requests = await Request.find({ requestedBy: userId });
-    let finalResponse: object[] = [];
-    let finalUsers: object[] = [];
     if (requests.length === 0) {
         return res.send(200).send([]);
     } else {
         const necessaryRequestData = requests.map(
-            ({ respondedBy, _id, title, createdAt, cost }) => ({
+            ({
+                respondedBy,
+                _id,
+                title,
+                createdAt,
+                cost,
+                requestType,
+                completed,
+                acceptedUser,
+            }) => ({
                 respondedBy,
                 _id,
                 cost,
                 createdAt: moment(createdAt).add(330, 'minutes').toISOString(),
                 title,
+                requestType,
+                completed,
+                acceptedUser,
             })
         );
         let finalData: object[] = [];
         necessaryRequestData.forEach(
-            ({ respondedBy, _id, cost, createdAt, title }) => {
+            ({
+                respondedBy,
+                _id,
+                cost,
+                createdAt,
+                title,
+                requestType,
+                completed,
+                acceptedUser,
+            }) => {
                 User.find({ _id: { $in: respondedBy } })
-                    .select('name email contactNumber')
+                    .select('name email contactNumber profilePicture')
                     .exec(function (err, user) {
                         if (err)
                             return res.status(200).send({
@@ -160,7 +180,15 @@ export const getRequestHistory = async (req: Req, res: Response) => {
                                 users: [],
                             });
                         finalData.push({
-                            request: { _id, cost, createdAt, title },
+                            request: {
+                                _id,
+                                cost,
+                                createdAt,
+                                title,
+                                requestType,
+                                acceptedUser,
+                                completed,
+                            },
                             users: user,
                         });
                         if (finalData.length === requests.length) {
@@ -174,11 +202,31 @@ export const getRequestHistory = async (req: Req, res: Response) => {
 
 export const addUserToRespondedBy = async (req: Req, res: Response) => {
     const { userId, requestId } = req.params;
-    await Request.findOneAndUpdate(
-        { reqUID: requestId },
-        {
-            $addToSet: { respondedBy: userId },
-        }
-    );
+    await Request.findByIdAndUpdate(requestId, {
+        $addToSet: { respondedBy: userId },
+    });
     res.status(200).send({ success: true });
+};
+
+export const acceptUserThatResponded = async (req: Req, res: Response) => {
+    const { userId, requestId } = req.params;
+    await Request.findByIdAndUpdate(requestId, {
+        $set: { completed: true, acceptedUser: userId },
+    });
+    res.status(200).send({
+        success: true,
+        message: `successfully accepted response of user ${userId}`,
+    });
+};
+
+export const removeUserThatResponded = async (req: Req, res: Response) => {
+    const { userId, requestId } = req.params;
+    await Request.findByIdAndUpdate(requestId, {
+        $set: { completed: false },
+        $pull: { respondedBy: userId },
+    });
+    res.status(200).send({
+        success: true,
+        message: `successfully declined response of user ${userId}`,
+    });
 };

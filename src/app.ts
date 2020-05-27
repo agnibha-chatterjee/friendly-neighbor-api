@@ -11,6 +11,7 @@ import { initializeCloudinary } from './utils/cloudinaryConfig';
 import errorHandler from './middlewares/errorHandler';
 import userRouter from './routes/userRoutes';
 import requestRouter from './routes/requestRoutes';
+import notificationRouter from './routes/notificationRouter';
 
 const app = express();
 
@@ -48,6 +49,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 // Routes
 app.use('/api/users', userRouter);
 app.use('/api/requests', requestRouter);
+app.use('/api/notifications', notificationRouter);
 
 // Error middleware
 app.use(errorHandler);

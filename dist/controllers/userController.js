@@ -102,14 +102,14 @@ exports.registerUser = function (req, res) { return __awaiter(void 0, void 0, vo
                 registeredUser = _b.sent();
                 res.status(201).send(registeredUser);
                 grpc_client_1.client.saveUserLocation({
-                    userId: registeredUser === null || registeredUser === void 0 ? void 0 : registeredUser.uid,
+                    userId: registeredUser === null || registeredUser === void 0 ? void 0 : registeredUser._id,
                     location: defaultLocation,
                     radius: defaultSearchRadius,
                 }, function (err, data) {
                     if (err)
                         console.log("ERROR - " + err);
                     if (data.success) {
-                        console.log("Registered user " + (registeredUser === null || registeredUser === void 0 ? void 0 : registeredUser.uid), data);
+                        console.log("Registered user " + (registeredUser === null || registeredUser === void 0 ? void 0 : registeredUser._id), data);
                     }
                 });
                 return [2];
@@ -198,14 +198,14 @@ exports.updateProfile = function (req, res) { return __awaiter(void 0, void 0, v
                 _b.label = 10;
             case 10:
                 grpc_client_1.client.saveUserLocation({
-                    userId: user === null || user === void 0 ? void 0 : user.uid,
+                    userId: user === null || user === void 0 ? void 0 : user._id,
                     location: defaultLocation,
                     radius: defaultSearchRadius,
                 }, function (err, data) {
                     if (err)
                         console.log("ERROR - " + err);
                     if (data.success) {
-                        console.log("Updated user - " + (user === null || user === void 0 ? void 0 : user.uid), data);
+                        console.log("Updated user - " + (user === null || user === void 0 ? void 0 : user._id), data);
                     }
                 });
                 return [2];

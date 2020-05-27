@@ -16,7 +16,6 @@ export interface User extends Document {
         pincode: number;
     };
     cloudinaryPublicId: string;
-    uid: string;
     defaultLocation: {
         latitude: number;
         longitude: number;
@@ -42,7 +41,6 @@ export interface RequestType extends Document {
         longitude: string;
     };
     cost: number;
-    reqUID: string;
     distance: number;
     respondedBy: Array<string>;
     acceptedUser: string;

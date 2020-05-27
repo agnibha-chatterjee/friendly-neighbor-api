@@ -20,11 +20,6 @@ const UserSchema = new Schema({
         trim: true,
         unique: true,
     },
-    uid: {
-        type: String,
-        unique: true,
-        default: generate,
-    },
     profilePicture: {
         type: String,
         trim: true,

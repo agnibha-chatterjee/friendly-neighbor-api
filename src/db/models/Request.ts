@@ -41,11 +41,6 @@ const RequestSchema = new Schema({
         type: Boolean,
         default: false,
     },
-    reqUID: {
-        type: String,
-        unique: true,
-        default: generate,
-    },
     location: {
         latitude: {
             type: Number,
@@ -66,7 +61,12 @@ const RequestSchema = new Schema({
         },
     ],
     respondedBy: { type: [String], default: [] },
-    acceptedUser: { type: Schema.Types.ObjectId, ref: 'user' },
+    acceptedUser: {
+        type: String,
+        ref: 'user',
+        default: '',
+        required: false,
+    },
 });
 
 export default model<RequestType>('request', RequestSchema);

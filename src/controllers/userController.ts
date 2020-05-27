@@ -77,14 +77,14 @@ export const registerUser = async (
     res.status(201).send(registeredUser);
     client.saveUserLocation(
         {
-            userId: registeredUser?.uid,
+            userId: registeredUser?._id,
             location: defaultLocation,
             radius: defaultSearchRadius,
         },
         (err: any, data: { success: boolean }) => {
             if (err) console.log(`ERROR - ${err}`);
             if (data.success) {
-                console.log(`Registered user ${registeredUser?.uid}`, data);
+                console.log(`Registered user ${registeredUser?._id}`, data);
             }
         }
     );
@@ -168,14 +168,14 @@ export const updateProfile = async (req: Request, res: Response) => {
     }
     client.saveUserLocation(
         {
-            userId: user?.uid,
+            userId: user?._id,
             location: defaultLocation,
             radius: defaultSearchRadius,
         },
         (err: string, data: { success: boolean }) => {
             if (err) console.log(`ERROR - ${err}`);
             if (data.success) {
-                console.log(`Updated user - ${user?.uid}`, data);
+                console.log(`Updated user - ${user?._id}`, data);
             }
         }
     );
