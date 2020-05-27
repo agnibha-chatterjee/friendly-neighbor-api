@@ -76,15 +76,20 @@ exports.getFilteredRequests = function (req, res) { return __awaiter(void 0, voi
                                     })];
                                 case 1:
                                     request = _b.sent();
-                                    request['createdAt'] = moment_1.default(request === null || request === void 0 ? void 0 : request.createdAt)
-                                        .add(330, 'minutes')
-                                        .toISOString();
-                                    fetchedRequests.push({
-                                        request: request,
-                                        distance: Math.ceil(distance),
-                                    });
-                                    if (fetchedRequests.length === requests.length) {
-                                        res.status(200).send(fetchedRequests);
+                                    if (request) {
+                                        request['createdAt'] = moment_1.default(request.createdAt)
+                                            .add(330, 'minutes')
+                                            .toISOString();
+                                        fetchedRequests.push({
+                                            request: request,
+                                            distance: Math.ceil(distance),
+                                        });
+                                        if (fetchedRequests.length === requests.length) {
+                                            res.status(200).send(fetchedRequests);
+                                        }
+                                    }
+                                    else {
+                                        res.status(200).send([]);
                                     }
                                     return [2];
                             }
