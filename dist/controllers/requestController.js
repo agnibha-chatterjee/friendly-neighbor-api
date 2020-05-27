@@ -77,17 +77,17 @@ exports.getFilteredRequests = function (req, res) { return __awaiter(void 0, voi
                                     })];
                                 case 1:
                                     request = _b.sent();
-                                    if ((request === null || request === void 0 ? void 0 : request.createdAt) !== null) {
-                                        request['createdAt'] = moment_1.default(request === null || request === void 0 ? void 0 : request.createdAt)
-                                            .add(330, 'minutes')
-                                            .toISOString();
+                                    if (request) {
+                                        fetchedRequests.push({
+                                            request: request,
+                                            distance: Math.ceil(distance),
+                                        });
+                                        if (fetchedRequests.length === requests.length) {
+                                            res.status(200).send(fetchedRequests);
+                                        }
                                     }
-                                    fetchedRequests.push({
-                                        request: request,
-                                        distance: Math.ceil(distance),
-                                    });
-                                    if (fetchedRequests.length === requests.length) {
-                                        res.status(200).send(fetchedRequests);
+                                    else {
+                                        return [2, res.status(200).send([])];
                                     }
                                     return [2];
                             }

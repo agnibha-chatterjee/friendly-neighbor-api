@@ -28,17 +28,16 @@ export const getFilteredRequests = async (req: Req, res: Response) => {
                     path: 'requestedBy',
                     select: 'name email profilePicture',
                 });
-                if (request?.createdAt !== null) {
-                    request!['createdAt'] = moment(request?.createdAt)
-                        .add(330, 'minutes')
-                        .toISOString();
-                }
-                fetchedRequests.push({
-                    request,
-                    distance: Math.ceil(distance),
-                });
-                if (fetchedRequests.length === requests.length) {
-                    res.status(200).send(fetchedRequests);
+                if (request) {
+                    fetchedRequests.push({
+                        request,
+                        distance: Math.ceil(distance),
+                    });
+                    if (fetchedRequests.length === requests.length) {
+                        res.status(200).send(fetchedRequests);
+                    }
+                } else {
+                    return res.status(200).send([]);
                 }
             });
         }
