@@ -70,27 +70,21 @@ exports.getFilteredRequests = function (req, res) { return __awaiter(void 0, voi
                             switch (_b.label) {
                                 case 0: return [4, Request_1.default.findOne({
                                         _id: postId,
-                                        completed: false,
                                     }).populate({
                                         path: 'requestedBy',
                                         select: 'name email profilePicture',
                                     })];
                                 case 1:
                                     request = _b.sent();
-                                    if (request) {
-                                        request['createdAt'] = moment_1.default(request.createdAt)
-                                            .add(330, 'minutes')
-                                            .toISOString();
-                                        fetchedRequests.push({
-                                            request: request,
-                                            distance: Math.ceil(distance),
-                                        });
-                                        if (fetchedRequests.length === requests.length) {
-                                            res.status(200).send(fetchedRequests);
-                                        }
-                                    }
-                                    else if (!request && index === requests.length) {
-                                        return [2, res.status(200).send([])];
+                                    request['createdAt'] = moment_1.default(request.createdAt)
+                                        .add(330, 'minutes')
+                                        .toISOString();
+                                    fetchedRequests.push({
+                                        request: request,
+                                        distance: Math.ceil(distance),
+                                    });
+                                    if (fetchedRequests.length === requests.length) {
+                                        res.status(200).send(fetchedRequests);
                                     }
                                     return [2];
                             }
