@@ -62,7 +62,7 @@ exports.getFilteredRequests = function (req, res) { return __awaiter(void 0, voi
                     return [2, res.status(200).send(data.requests)];
                 }
                 requests = data.requests;
-                requests.map(function (_a) {
+                requests.map(function (_a, index) {
                     var postId = _a.postId, distance = _a.distance;
                     return __awaiter(void 0, void 0, void 0, function () {
                         var request;
@@ -78,6 +78,9 @@ exports.getFilteredRequests = function (req, res) { return __awaiter(void 0, voi
                                 case 1:
                                     request = _b.sent();
                                     if (request) {
+                                        request['createdAt'] = moment_1.default(request.createdAt)
+                                            .add(330, 'minutes')
+                                            .toISOString();
                                         fetchedRequests.push({
                                             request: request,
                                             distance: Math.ceil(distance),
@@ -86,7 +89,7 @@ exports.getFilteredRequests = function (req, res) { return __awaiter(void 0, voi
                                             res.status(200).send(fetchedRequests);
                                         }
                                     }
-                                    else {
+                                    else if (!request && index === requests.length) {
                                         return [2, res.status(200).send([])];
                                     }
                                     return [2];
