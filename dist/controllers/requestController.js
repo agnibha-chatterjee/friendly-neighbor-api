@@ -77,9 +77,11 @@ exports.getFilteredRequests = function (req, res) { return __awaiter(void 0, voi
                                     })];
                                 case 1:
                                     request = _b.sent();
-                                    request['createdAt'] = moment_1.default(request === null || request === void 0 ? void 0 : request.createdAt)
-                                        .add(330, 'minutes')
-                                        .toISOString();
+                                    if ((request === null || request === void 0 ? void 0 : request.createdAt) !== null) {
+                                        request['createdAt'] = moment_1.default(request === null || request === void 0 ? void 0 : request.createdAt)
+                                            .add(330, 'minutes')
+                                            .toISOString();
+                                    }
                                     fetchedRequests.push({
                                         request: request,
                                         distance: Math.ceil(distance),
@@ -207,7 +209,7 @@ exports.getRequestHistory = function (req, res) { return __awaiter(void 0, void 
             case 1:
                 requests = _a.sent();
                 if (requests.length === 0) {
-                    return [2, res.send(200).send([])];
+                    return [2, res.status(200).send([])];
                 }
                 else {
                     necessaryRequestData = requests.map(function (_a) {

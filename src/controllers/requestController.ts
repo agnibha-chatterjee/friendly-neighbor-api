@@ -28,9 +28,11 @@ export const getFilteredRequests = async (req: Req, res: Response) => {
                     path: 'requestedBy',
                     select: 'name email profilePicture',
                 });
-                request!['createdAt'] = moment(request?.createdAt)
-                    .add(330, 'minutes')
-                    .toISOString();
+                if (request?.createdAt !== null) {
+                    request!['createdAt'] = moment(request?.createdAt)
+                        .add(330, 'minutes')
+                        .toISOString();
+                }
                 fetchedRequests.push({
                     request,
                     distance: Math.ceil(distance),
@@ -136,7 +138,7 @@ export const getRequestHistory = async (req: Req, res: Response) => {
     const { userId } = req.params;
     const requests = await Request.find({ requestedBy: userId });
     if (requests.length === 0) {
-        return res.send(200).send([]);
+        return res.status(200).send([]);
     } else {
         const necessaryRequestData = requests.map(
             ({
