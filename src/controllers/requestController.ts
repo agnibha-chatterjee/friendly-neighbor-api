@@ -22,24 +22,20 @@ export const getFilteredRequests = async (req: Req, res: Response) => {
             const { requests } = data;
             requests.map(async ({ postId, distance }, index: number) => {
                 const request = await Request.findOne({
-                    _id: postId,
+                    reqUID: postId,
                 }).populate({
                     path: 'requestedBy',
                     select: 'name email profilePicture',
                 });
-                if (request) {
-                    request['createdAt'] = moment(request.createdAt)
-                        .add(330, 'minutes')
-                        .toISOString();
-                    fetchedRequests.push({
-                        request,
-                        distance: Math.ceil(distance),
-                    });
-                    if (fetchedRequests.length === requests.length) {
-                        res.status(200).send(fetchedRequests);
-                    }
-                } else {
-                    res.status(200).send([]);
+                request!['createdAt'] = moment(request?.createdAt)
+                    .add(330, 'minutes')
+                    .toISOString();
+                fetchedRequests.push({
+                    request,
+                    distance: Math.ceil(distance),
+                });
+                if (fetchedRequests.length === requests.length) {
+                    res.status(200).send(fetchedRequests);
                 }
             });
         }

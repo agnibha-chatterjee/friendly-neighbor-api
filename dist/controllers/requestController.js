@@ -69,27 +69,22 @@ exports.getFilteredRequests = function (req, res) { return __awaiter(void 0, voi
                         return __generator(this, function (_b) {
                             switch (_b.label) {
                                 case 0: return [4, Request_1.default.findOne({
-                                        _id: postId,
+                                        reqUID: postId,
                                     }).populate({
                                         path: 'requestedBy',
                                         select: 'name email profilePicture',
                                     })];
                                 case 1:
                                     request = _b.sent();
-                                    if (request) {
-                                        request['createdAt'] = moment_1.default(request.createdAt)
-                                            .add(330, 'minutes')
-                                            .toISOString();
-                                        fetchedRequests.push({
-                                            request: request,
-                                            distance: Math.ceil(distance),
-                                        });
-                                        if (fetchedRequests.length === requests.length) {
-                                            res.status(200).send(fetchedRequests);
-                                        }
-                                    }
-                                    else {
-                                        res.status(200).send([]);
+                                    request['createdAt'] = moment_1.default(request === null || request === void 0 ? void 0 : request.createdAt)
+                                        .add(330, 'minutes')
+                                        .toISOString();
+                                    fetchedRequests.push({
+                                        request: request,
+                                        distance: Math.ceil(distance),
+                                    });
+                                    if (fetchedRequests.length === requests.length) {
+                                        res.status(200).send(fetchedRequests);
                                     }
                                     return [2];
                             }
