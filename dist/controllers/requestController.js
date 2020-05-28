@@ -58,38 +58,31 @@ exports.getFilteredRequests = function (req, res) { return __awaiter(void 0, voi
             return __generator(this, function (_a) {
                 if (err)
                     return [2, res.status(500).send({ err: err })];
-                if (!data.requests.length) {
-                    return [2, res.status(200).send(data.requests)];
-                }
                 requests = data.requests;
-                requests.map(function (_a, index) {
+                if (requests.length === 0) {
+                    return [2, res.status(200).send([])];
+                }
+                requests.forEach(function (_a, index) {
                     var postId = _a.postId, distance = _a.distance;
                     return __awaiter(void 0, void 0, void 0, function () {
                         var request;
                         return __generator(this, function (_b) {
                             switch (_b.label) {
                                 case 0: return [4, Request_1.default.findOne({
-                                        reqUID: postId,
+                                        _id: postId,
+                                        completed: false,
                                     }).populate({
                                         path: 'requestedBy',
                                         select: 'name email profilePicture',
                                     })];
                                 case 1:
                                     request = _b.sent();
-                                    if (request) {
-                                        request['createdAt'] = moment_1.default(request.createdAt)
-                                            .add(330, 'minutes')
-                                            .toISOString();
-                                        fetchedRequests.push({
-                                            request: request,
-                                            distance: Math.ceil(distance),
-                                        });
-                                        if (fetchedRequests.length === requests.length) {
-                                            res.status(200).send(fetchedRequests);
-                                        }
-                                    }
-                                    else {
-                                        res.status(200).send([]);
+                                    fetchedRequests.push({
+                                        request: request,
+                                        distance: distance,
+                                    });
+                                    if (fetchedRequests.length === requests.length) {
+                                        return [2, res.status(200).send(fetchedRequests)];
                                     }
                                     return [2];
                             }
@@ -103,7 +96,7 @@ exports.getFilteredRequests = function (req, res) { return __awaiter(void 0, voi
     });
 }); };
 exports.createRequest = function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
-    var files, data, userId, newRequest, user, location_1, searchRadius, _id_1;
+    var files, data, userId, newRequest, user, location_1, searchRadius, _id_1, title, requestType;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
@@ -111,6 +104,7 @@ exports.createRequest = function (req, res) { return __awaiter(void 0, void 0, v
                 data = req.files ? JSON.parse(req.body.data) : req.body;
                 data['location'] = JSON.parse(data['location']);
                 data['cost'] = parseInt(data['cost']);
+                data['createdAt'] = moment_1.default().add(330, 'minutes').toISOString();
                 userId = data['requestedBy'];
                 return [4, Request_1.default.create(data)];
             case 1:
@@ -129,9 +123,14 @@ exports.createRequest = function (req, res) { return __awaiter(void 0, void 0, v
             case 3: return [4, User_1.default.findById(newRequest.requestedBy)];
             case 4:
                 user = _a.sent();
-                location_1 = newRequest.location, searchRadius = newRequest.searchRadius, _id_1 = newRequest._id;
+                location_1 = newRequest.location, searchRadius = newRequest.searchRadius, _id_1 = newRequest._id, title = newRequest.title, requestType = newRequest.requestType;
                 if (JSON.stringify(user === null || user === void 0 ? void 0 : user.defaultLocation) === JSON.stringify(location_1)) {
-                    grpc_client_1.client.forwardRequestNearbyDefaultLocation({ userId: userId, radius: searchRadius, postId: _id_1 }, function (err, data) {
+                    grpc_client_1.client.forwardRequestNearbyDefaultLocation({
+                        userId: userId,
+                        postId: _id_1,
+                        title: title,
+                        type: requestType === 'request' ? 0 : 1,
+                    }, function (err, data) {
                         if (err)
                             console.log("ERROR - " + err);
                         if (data.success) {
@@ -140,7 +139,14 @@ exports.createRequest = function (req, res) { return __awaiter(void 0, void 0, v
                     });
                 }
                 else {
-                    grpc_client_1.client.forwardRequestNearbyCustomLocation({ userId: userId, location: location_1, radius: searchRadius, postId: _id_1 }, function (err, data) {
+                    grpc_client_1.client.forwardRequestNearbyCustomLocation({
+                        userId: userId,
+                        location: location_1,
+                        radius: searchRadius,
+                        postId: _id_1,
+                        title: title,
+                        type: requestType === 'request' ? 0 : 1,
+                    }, function (err, data) {
                         if (err)
                             console.log("ERROR - " + err);
                         if (data.success) {
@@ -261,7 +267,7 @@ exports.getRequestHistory = function (req, res) { return __awaiter(void 0, void 
     });
 }); };
 exports.addUserToRespondedBy = function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
-    var _a, userId, requestId;
+    var _a, userId, requestId, request, user;
     return __generator(this, function (_b) {
         switch (_b.label) {
             case 0:
@@ -270,14 +276,27 @@ exports.addUserToRespondedBy = function (req, res) { return __awaiter(void 0, vo
                         $addToSet: { respondedBy: userId },
                     })];
             case 1:
-                _b.sent();
+                request = _b.sent();
                 res.status(200).send({ success: true });
+                return [4, User_1.default.findById(userId)];
+            case 2:
+                user = _b.sent();
+                grpc_client_1.client.notifyForResponse({
+                    userId: request === null || request === void 0 ? void 0 : request.requestedBy,
+                    nameOfRespondingUser: user === null || user === void 0 ? void 0 : user.name,
+                    responseType: 0,
+                }, function (err, data) {
+                    if (err)
+                        console.log("Error - " + err);
+                    if (data.success)
+                        console.log(userId + " responded to " + (request === null || request === void 0 ? void 0 : request.requestedBy) + "'s request with id - " + (request === null || request === void 0 ? void 0 : request._id));
+                });
                 return [2];
         }
     });
 }); };
 exports.acceptUserThatResponded = function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
-    var _a, userId, requestId;
+    var _a, userId, requestId, updatedRequest, respondingUser;
     return __generator(this, function (_b) {
         switch (_b.label) {
             case 0:
@@ -286,10 +305,23 @@ exports.acceptUserThatResponded = function (req, res) { return __awaiter(void 0,
                         $set: { completed: true, acceptedUser: userId },
                     })];
             case 1:
-                _b.sent();
+                updatedRequest = _b.sent();
                 res.status(200).send({
                     success: true,
                     message: "successfully accepted response of user " + userId,
+                });
+                return [4, User_1.default.findById(updatedRequest === null || updatedRequest === void 0 ? void 0 : updatedRequest.requestedBy)];
+            case 2:
+                respondingUser = _b.sent();
+                grpc_client_1.client.notifyForResponse({
+                    userId: userId,
+                    nameOfRespondingUser: respondingUser === null || respondingUser === void 0 ? void 0 : respondingUser.name,
+                    responseType: 1,
+                }, function (err, data) {
+                    if (err)
+                        console.log("Error - " + err);
+                    if (data.success)
+                        console.log((updatedRequest === null || updatedRequest === void 0 ? void 0 : updatedRequest.requestedBy) + " accepted " + userId + "'s response. Request ID - " + (updatedRequest === null || updatedRequest === void 0 ? void 0 : updatedRequest._id));
                 });
                 return [2];
         }

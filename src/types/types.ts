@@ -52,12 +52,10 @@ export interface CustomRequest<T, S> extends Request {
 }
 
 export type FindNearbyRequests = {
-    requests: [
-        {
-            postId: string;
-            distance: number;
-        }
-    ];
+    requests: Array<{
+        postId: string;
+        distance: number;
+    }>;
     metaResult: {
         success: boolean;
     };

@@ -26,7 +26,6 @@ const RequestSchema = new Schema({
     },
     createdAt: {
         type: Date,
-        default: Date.now,
     },
     contactNumber: {
         type: String,

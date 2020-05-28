@@ -16,30 +16,24 @@ export const getFilteredRequests = async (req: Req, res: Response) => {
         { userId },
         async (err: string, data: FindNearbyRequests) => {
             if (err) return res.status(500).send({ err });
-            if (!data.requests.length) {
-                return res.status(200).send(data.requests);
-            }
             const { requests } = data;
-            requests.map(async ({ postId, distance }, index: number) => {
+            if (requests.length === 0) {
+                return res.status(200).send([]);
+            }
+            requests.forEach(async ({ postId, distance }, index: number) => {
                 const request = await Request.findOne({
-                    reqUID: postId,
+                    _id: postId,
+                    completed: false,
                 }).populate({
                     path: 'requestedBy',
                     select: 'name email profilePicture',
                 });
-                if (request) {
-                    request['createdAt'] = moment(request.createdAt)
-                        .add(330, 'minutes')
-                        .toISOString();
-                    fetchedRequests.push({
-                        request,
-                        distance: Math.ceil(distance),
-                    });
-                    if (fetchedRequests.length === requests.length) {
-                        res.status(200).send(fetchedRequests);
-                    }
-                } else {
-                    res.status(200).send([]);
+                fetchedRequests.push({
+                    request,
+                    distance,
+                });
+                if (fetchedRequests.length === requests.length) {
+                    return res.status(200).send(fetchedRequests);
                 }
             });
         }
@@ -51,6 +45,7 @@ export const createRequest = async (req: Req, res: Response) => {
     const data = req.files ? JSON.parse(req.body.data) : req.body;
     data['location'] = JSON.parse(data['location']);
     data['cost'] = parseInt(data['cost']);
+    data['createdAt'] = moment().add(330, 'minutes').toISOString();
     const userId = data['requestedBy'];
     const newRequest = await Request.create(data);
     if (newRequest._id) {
@@ -64,12 +59,17 @@ export const createRequest = async (req: Req, res: Response) => {
             deletePhotos(resolve(__dirname, `../../uploads/`));
         }
         const user = await User.findById(newRequest.requestedBy);
-        const { location, searchRadius, _id } = newRequest;
+        const { location, searchRadius, _id, title, requestType } = newRequest;
         if (
             JSON.stringify(user?.defaultLocation) === JSON.stringify(location)
         ) {
             client.forwardRequestNearbyDefaultLocation(
-                { userId, radius: searchRadius, postId: _id },
+                {
+                    userId,
+                    postId: _id,
+                    title,
+                    type: requestType === 'request' ? 0 : 1,
+                },
                 (err: any, data: { success: boolean }) => {
                     if (err) console.log(`ERROR - ${err}`);
                     if (data.success) {
@@ -82,7 +82,14 @@ export const createRequest = async (req: Req, res: Response) => {
             );
         } else {
             client.forwardRequestNearbyCustomLocation(
-                { userId, location, radius: searchRadius, postId: _id },
+                {
+                    userId,
+                    location,
+                    radius: searchRadius,
+                    postId: _id,
+                    title,
+                    type: requestType === 'request' ? 0 : 1,
+                },
                 (err: any, data: { success: boolean }) => {
                     if (err) console.log(`ERROR - ${err}`);
                     if (data.success) {
@@ -205,21 +212,51 @@ export const getRequestHistory = async (req: Req, res: Response) => {
 
 export const addUserToRespondedBy = async (req: Req, res: Response) => {
     const { userId, requestId } = req.params;
-    await Request.findByIdAndUpdate(requestId, {
+    const request = await Request.findByIdAndUpdate(requestId, {
         $addToSet: { respondedBy: userId },
     });
     res.status(200).send({ success: true });
+    const user = await User.findById(userId);
+    client.notifyForResponse(
+        {
+            userId: request?.requestedBy,
+            nameOfRespondingUser: user?.name,
+            responseType: 0,
+        },
+        (err: string, data: { success: true }) => {
+            if (err) console.log(`Error - ${err}`);
+            if (data.success)
+                console.log(
+                    `${userId} responded to ${request?.requestedBy}'s request with id - ${request?._id}`
+                );
+        }
+    );
 };
 
 export const acceptUserThatResponded = async (req: Req, res: Response) => {
     const { userId, requestId } = req.params;
-    await Request.findByIdAndUpdate(requestId, {
+    const updatedRequest = await Request.findByIdAndUpdate(requestId, {
         $set: { completed: true, acceptedUser: userId },
     });
     res.status(200).send({
         success: true,
         message: `successfully accepted response of user ${userId}`,
     });
+    const respondingUser = await User.findById(updatedRequest?.requestedBy);
+    client.notifyForResponse(
+        {
+            userId,
+            nameOfRespondingUser: respondingUser?.name,
+            responseType: 1,
+        },
+        (err: string, data: { success: true }) => {
+            if (err) console.log(`Error - ${err}`);
+            if (data.success)
+                console.log(
+                    `${updatedRequest?.requestedBy} accepted ${userId}'s response. Request ID - ${updatedRequest?._id}`
+                );
+        }
+    );
 };
 
 export const removeUserThatResponded = async (req: Req, res: Response) => {

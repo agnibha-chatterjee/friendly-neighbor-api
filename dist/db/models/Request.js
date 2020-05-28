@@ -26,7 +26,6 @@ var RequestSchema = new mongoose_1.Schema({
     },
     createdAt: {
         type: Date,
-        default: Date.now,
     },
     contactNumber: {
         type: String,
