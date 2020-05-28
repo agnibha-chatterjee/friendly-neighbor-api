@@ -59,7 +59,6 @@ exports.getFilteredRequests = function (req, res) { return __awaiter(void 0, voi
                 if (err)
                     return [2, res.status(500).send({ err: err })];
                 requests = data.requests;
-                res.status(200).send(requests);
                 if (requests.length === 0) {
                     return [2, res.status(200).send([])];
                 }

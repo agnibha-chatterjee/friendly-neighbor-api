@@ -17,7 +17,6 @@ export const getFilteredRequests = async (req: Req, res: Response) => {
         async (err: string, data: FindNearbyRequests) => {
             if (err) return res.status(500).send({ err });
             const { requests } = data;
-            res.status(200).send(requests);
             if (requests.length === 0) {
                 return res.status(200).send([]);
             }
