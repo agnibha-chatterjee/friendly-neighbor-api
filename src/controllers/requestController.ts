@@ -18,25 +18,25 @@ export const getFilteredRequests = async (req: Req, res: Response) => {
             if (err) return res.status(500).send({ err });
             const { requests } = data;
             res.status(200).send(requests);
-            // if (requests.length === 0) {
-            //     return res.status(200).send([]);
-            // }
-            // requests.forEach(async ({ postId, distance }, index: number) => {
-            //     const request = await Request.findOne({
-            //         _id: postId,
-            //         completed: false,
-            //     }).populate({
-            //         path: 'requestedBy',
-            //         select: 'name email profilePicture',
-            //     });
-            //     fetchedRequests.push({
-            //         request,
-            //         distance,
-            //     });
-            //     if (fetchedRequests.length === requests.length) {
-            //         return res.status(200).send(fetchedRequests);
-            //     }
-            // });
+            if (requests.length === 0) {
+                return res.status(200).send([]);
+            }
+            requests.forEach(async ({ postId, distance }, index: number) => {
+                const request = await Request.findOne({
+                    _id: postId,
+                    completed: false,
+                }).populate({
+                    path: 'requestedBy',
+                    select: 'name email profilePicture',
+                });
+                fetchedRequests.push({
+                    request,
+                    distance,
+                });
+                if (fetchedRequests.length === requests.length) {
+                    return res.status(200).send(fetchedRequests);
+                }
+            });
         }
     );
 };
