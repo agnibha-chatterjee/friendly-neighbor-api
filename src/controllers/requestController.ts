@@ -17,25 +17,26 @@ export const getFilteredRequests = async (req: Req, res: Response) => {
         async (err: string, data: FindNearbyRequests) => {
             if (err) return res.status(500).send({ err });
             const { requests } = data;
-            if (requests.length === 0) {
-                return res.status(200).send([]);
-            }
-            requests.forEach(async ({ postId, distance }, index: number) => {
-                const request = await Request.findOne({
-                    _id: postId,
-                    completed: false,
-                }).populate({
-                    path: 'requestedBy',
-                    select: 'name email profilePicture',
-                });
-                fetchedRequests.push({
-                    request,
-                    distance,
-                });
-                if (fetchedRequests.length === requests.length) {
-                    return res.status(200).send(fetchedRequests);
-                }
-            });
+            res.status(200).send(requests);
+            // if (requests.length === 0) {
+            //     return res.status(200).send([]);
+            // }
+            // requests.forEach(async ({ postId, distance }, index: number) => {
+            //     const request = await Request.findOne({
+            //         _id: postId,
+            //         completed: false,
+            //     }).populate({
+            //         path: 'requestedBy',
+            //         select: 'name email profilePicture',
+            //     });
+            //     fetchedRequests.push({
+            //         request,
+            //         distance,
+            //     });
+            //     if (fetchedRequests.length === requests.length) {
+            //         return res.status(200).send(fetchedRequests);
+            //     }
+            // });
         }
     );
 };
@@ -162,7 +163,7 @@ export const getRequestHistory = async (req: Req, res: Response) => {
                 respondedBy,
                 _id,
                 cost,
-                createdAt: moment(createdAt).add(330, 'minutes').toISOString(),
+                createdAt,
                 title,
                 requestType,
                 completed,

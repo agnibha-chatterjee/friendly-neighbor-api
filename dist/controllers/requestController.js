@@ -59,36 +59,7 @@ exports.getFilteredRequests = function (req, res) { return __awaiter(void 0, voi
                 if (err)
                     return [2, res.status(500).send({ err: err })];
                 requests = data.requests;
-                if (requests.length === 0) {
-                    return [2, res.status(200).send([])];
-                }
-                requests.forEach(function (_a, index) {
-                    var postId = _a.postId, distance = _a.distance;
-                    return __awaiter(void 0, void 0, void 0, function () {
-                        var request;
-                        return __generator(this, function (_b) {
-                            switch (_b.label) {
-                                case 0: return [4, Request_1.default.findOne({
-                                        _id: postId,
-                                        completed: false,
-                                    }).populate({
-                                        path: 'requestedBy',
-                                        select: 'name email profilePicture',
-                                    })];
-                                case 1:
-                                    request = _b.sent();
-                                    fetchedRequests.push({
-                                        request: request,
-                                        distance: distance,
-                                    });
-                                    if (fetchedRequests.length === requests.length) {
-                                        return [2, res.status(200).send(fetchedRequests)];
-                                    }
-                                    return [2];
-                            }
-                        });
-                    });
-                });
+                res.status(200).send(requests);
                 return [2];
             });
         }); });
@@ -226,7 +197,7 @@ exports.getRequestHistory = function (req, res) { return __awaiter(void 0, void 
                             respondedBy: respondedBy,
                             _id: _id,
                             cost: cost,
-                            createdAt: moment_1.default(createdAt).add(330, 'minutes').toISOString(),
+                            createdAt: createdAt,
                             title: title,
                             requestType: requestType,
                             completed: completed,
