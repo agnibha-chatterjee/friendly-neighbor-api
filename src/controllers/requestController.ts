@@ -15,7 +15,7 @@ export const getFilteredRequests = async (req: Req, res: Response) => {
     client.fetchRequestsNearby(
         { userId },
         async (err: string, data: FindNearbyRequests) => {
-            if (err) return res.status(500).send({ err });
+            if (err) console.log(`Error etching requests - ${err}`);
             const { requests } = data;
             if (requests.length === 0) {
                 return res.status(200).send([]);
@@ -50,7 +50,7 @@ export const createRequest = async (req: Req, res: Response) => {
     const newRequest = await Request.create(data);
     if (newRequest._id) {
         res.status(201).send(newRequest);
-        if (Object.keys(req.files).length > 0) {
+        if (req.files) {
             files = Object.keys(req.files).map((fieldname: string) => {
                 // @ts-ignore
                 return req.files[fieldname][0];

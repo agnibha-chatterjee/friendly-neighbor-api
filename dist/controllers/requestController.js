@@ -57,7 +57,7 @@ exports.getFilteredRequests = function (req, res) { return __awaiter(void 0, voi
             var requests;
             return __generator(this, function (_a) {
                 if (err)
-                    return [2, res.status(500).send({ err: err })];
+                    console.log("Error etching requests - " + err);
                 requests = data.requests;
                 if (requests.length === 0) {
                     return [2, res.status(200).send([])];
@@ -111,7 +111,7 @@ exports.createRequest = function (req, res) { return __awaiter(void 0, void 0, v
                 newRequest = _a.sent();
                 if (!newRequest._id) return [3, 5];
                 res.status(201).send(newRequest);
-                if (!(Object.keys(req.files).length > 0)) return [3, 3];
+                if (!req.files) return [3, 3];
                 files = Object.keys(req.files).map(function (fieldname) {
                     return req.files[fieldname][0];
                 });
