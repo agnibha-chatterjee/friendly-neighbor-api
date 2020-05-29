@@ -8,10 +8,14 @@ import { FindNearbyRequests } from '../types/types';
 import User from '../db/models/User';
 import { cloudinaryApi } from '../utils/cloudinaryConfig';
 import moment from 'moment';
+import sortBy from 'lodash.sortby';
 
 export const getFilteredRequests = async (req: Req, res: Response) => {
     const { userId } = req.params;
-    let fetchedRequests: object[] = [];
+    let fetchedRequests: Array<{
+        request: object | null;
+        distance: number;
+    }> = [];
     client.fetchRequestsNearby(
         { userId },
         async (err: string, data: FindNearbyRequests) => {
@@ -30,10 +34,22 @@ export const getFilteredRequests = async (req: Req, res: Response) => {
                 });
                 fetchedRequests.push({
                     request,
-                    distance,
+                    distance: distance ? distance : 0.0,
                 });
                 if (fetchedRequests.length === requests.length) {
-                    return res.status(200).send(fetchedRequests);
+                    const sortedResponse = sortBy(
+                        fetchedRequests.filter((x) => x.request !== null),
+                        [
+                            [
+                                function (o: {
+                                    request: { createdAt: string };
+                                }) {
+                                    return o.request.createdAt;
+                                },
+                            ],
+                        ]
+                    ).reverse();
+                    return res.status(200).send(sortedResponse);
                 }
             });
         }

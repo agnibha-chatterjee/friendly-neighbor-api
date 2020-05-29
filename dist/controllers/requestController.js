@@ -48,6 +48,7 @@ var grpc_client_1 = require("../grpc/grpc-client");
 var User_1 = __importDefault(require("../db/models/User"));
 var cloudinaryConfig_1 = require("../utils/cloudinaryConfig");
 var moment_1 = __importDefault(require("moment"));
+var lodash_sortby_1 = __importDefault(require("lodash.sortby"));
 exports.getFilteredRequests = function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
     var userId, fetchedRequests;
     return __generator(this, function (_a) {
@@ -65,7 +66,7 @@ exports.getFilteredRequests = function (req, res) { return __awaiter(void 0, voi
                 requests.forEach(function (_a, index) {
                     var postId = _a.postId, distance = _a.distance;
                     return __awaiter(void 0, void 0, void 0, function () {
-                        var request;
+                        var request, sortedResponse;
                         return __generator(this, function (_b) {
                             switch (_b.label) {
                                 case 0: return [4, Request_1.default.findOne({
@@ -79,10 +80,17 @@ exports.getFilteredRequests = function (req, res) { return __awaiter(void 0, voi
                                     request = _b.sent();
                                     fetchedRequests.push({
                                         request: request,
-                                        distance: distance,
+                                        distance: distance ? distance : 0.0,
                                     });
                                     if (fetchedRequests.length === requests.length) {
-                                        return [2, res.status(200).send(fetchedRequests)];
+                                        sortedResponse = lodash_sortby_1.default(fetchedRequests.filter(function (x) { return x.request !== null; }), [
+                                            [
+                                                function (o) {
+                                                    return o.request.createdAt;
+                                                },
+                                            ],
+                                        ]).reverse();
+                                        return [2, res.status(200).send(sortedResponse)];
                                     }
                                     return [2];
                             }
