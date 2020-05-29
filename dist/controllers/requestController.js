@@ -57,7 +57,7 @@ exports.getFilteredRequests = function (req, res) { return __awaiter(void 0, voi
             var requests;
             return __generator(this, function (_a) {
                 if (err)
-                    console.log("Error etching requests - " + err);
+                    console.log("Error fetching requests - " + err);
                 requests = data.requests;
                 if (requests.length === 0) {
                     return [2, res.status(200).send([])];

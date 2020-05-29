@@ -132,7 +132,7 @@ export const updateProfile = async (req: Request, res: Response) => {
                 address,
             },
         });
-        return res.status(200).send({ success: true });
+        res.status(200).send({ success: true });
     } else {
         await compressImage(userId, req.file);
         uploader.upload(
@@ -146,7 +146,7 @@ export const updateProfile = async (req: Request, res: Response) => {
                 overwrite: true,
             },
             async (error, result) => {
-                if (error) throw error;
+                if (error) console.log(`CLOUDINARY-ERROR - ${error}`);
                 res.status(200).send({
                     profilePicture: result?.secure_url,
                     success: true,

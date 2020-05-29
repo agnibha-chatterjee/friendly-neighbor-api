@@ -159,7 +159,8 @@ exports.updateProfile = function (req, res) { return __awaiter(void 0, void 0, v
                     })];
             case 7:
                 _b.sent();
-                return [2, res.status(200).send({ success: true })];
+                res.status(200).send({ success: true });
+                return [3, 10];
             case 8: return [4, compressImage_1.compressImage(userId, req.file)];
             case 9:
                 _b.sent();
@@ -172,7 +173,7 @@ exports.updateProfile = function (req, res) { return __awaiter(void 0, void 0, v
                         switch (_a.label) {
                             case 0:
                                 if (error)
-                                    throw error;
+                                    console.log("CLOUDINARY-ERROR - " + error);
                                 res.status(200).send({
                                     profilePicture: result === null || result === void 0 ? void 0 : result.secure_url,
                                     success: true,

@@ -15,7 +15,7 @@ export const getFilteredRequests = async (req: Req, res: Response) => {
     client.fetchRequestsNearby(
         { userId },
         async (err: string, data: FindNearbyRequests) => {
-            if (err) console.log(`Error etching requests - ${err}`);
+            if (err) console.log(`Error fetching requests - ${err}`);
             const { requests } = data;
             if (requests.length === 0) {
                 return res.status(200).send([]);
