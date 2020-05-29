@@ -84,11 +84,9 @@ exports.getFilteredRequests = function (req, res) { return __awaiter(void 0, voi
                                     });
                                     if (fetchedRequests.length === requests.length) {
                                         sortedResponse = lodash_sortby_1.default(fetchedRequests.filter(function (x) { return x.request !== null; }), [
-                                            [
-                                                function (o) {
-                                                    return o.request.createdAt;
-                                                },
-                                            ],
+                                            function (o) {
+                                                return o.request.createdAt;
+                                            },
                                         ]).reverse();
                                         return [2, res.status(200).send(sortedResponse)];
                                     }
@@ -265,7 +263,12 @@ exports.getRequestHistory = function (req, res) { return __awaiter(void 0, void 
                                 users: user,
                             });
                             if (finalData_1.length === requests.length) {
-                                res.status(200).send(finalData_1);
+                                var sortedResponse = lodash_sortby_1.default(finalData_1, [
+                                    function (o) {
+                                        return o.request.createdAt;
+                                    },
+                                ]).reverse();
+                                res.status(200).send(sortedResponse);
                             }
                         });
                     });

@@ -40,13 +40,9 @@ export const getFilteredRequests = async (req: Req, res: Response) => {
                     const sortedResponse = sortBy(
                         fetchedRequests.filter((x) => x.request !== null),
                         [
-                            [
-                                function (o: {
-                                    request: { createdAt: string };
-                                }) {
-                                    return o.request.createdAt;
-                                },
-                            ],
+                            function (o: { request: { createdAt: string } }) {
+                                return o.request.createdAt;
+                            },
                         ]
                     ).reverse();
                     return res.status(200).send(sortedResponse);
@@ -218,7 +214,14 @@ export const getRequestHistory = async (req: Req, res: Response) => {
                             users: user,
                         });
                         if (finalData.length === requests.length) {
-                            res.status(200).send(finalData);
+                            const sortedResponse = sortBy(finalData, [
+                                function (o: {
+                                    request: { createdAt: string };
+                                }) {
+                                    return o.request.createdAt;
+                                },
+                            ]).reverse();
+                            res.status(200).send(sortedResponse);
                         }
                     });
             }
