@@ -41,65 +41,77 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getUserData = exports.updateProfile = exports.registerUser = exports.loginOrSignUp = void 0;
 var User_1 = __importDefault(require("../db/models/User"));
+var google_auth_library_1 = require("google-auth-library");
 var cloudinaryConfig_1 = require("../utils/cloudinaryConfig");
 var path_1 = require("path");
 var compressImage_1 = require("../utils/compressImage");
 var detelePhotos_1 = require("../utils/detelePhotos");
 var moment_1 = __importDefault(require("moment"));
 var grpc_client_1 = require("../grpc/grpc-client");
+var Gclient = new google_auth_library_1.OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 exports.loginOrSignUp = function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
-    var _id, user, newUser;
+    var idToken, ticket, payload, email, name_1, picture, sub, newUser, existingUser, user;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
-                _id = req.body._id;
-                return [4, User_1.default.findById(_id)];
+                idToken = req.body.idToken;
+                return [4, Gclient.verifyIdToken({
+                        idToken: idToken,
+                        audience: process.env.GOOGLE_CLIENT_ID,
+                    })];
             case 1:
+                ticket = _a.sent();
+                payload = ticket.getPayload();
+                if (!(payload !== undefined)) return [3, 6];
+                email = payload.email, name_1 = payload.name, picture = payload.picture, sub = payload.sub;
+                newUser = {
+                    email: email,
+                    name: name_1,
+                    profilePicture: picture,
+                    googleId: sub,
+                };
+                return [4, User_1.default.findOne({ email: email })];
+            case 2:
+                existingUser = _a.sent();
+                if (!existingUser) return [3, 3];
+                res.status(200).send({ newUser: false, user: existingUser });
+                return [3, 5];
+            case 3: return [4, User_1.default.create(newUser)];
+            case 4:
                 user = _a.sent();
-                if (!user) return [3, 2];
-                res.status(200).send({ newUser: false, user: user });
-                return [3, 4];
-            case 2: return [4, User_1.default.create(req.body)];
-            case 3:
-                newUser = _a.sent();
-                res.status(201).send({ newUser: true, user: newUser });
-                _a.label = 4;
-            case 4: return [2];
+                res.status(201).send({ newUser: true, user: user });
+                _a.label = 5;
+            case 5: return [3, 7];
+            case 6:
+                res.status(406).send({ error: 'invalid token' });
+                _a.label = 7;
+            case 7: return [2];
         }
     });
 }); };
 exports.registerUser = function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
-    var _a, firstName, lastName, email, username, defaultLocation, address, defaultSearchRadius, _id, user;
+    var _a, address, defaultSearchRadius, defaultLocation, contactNumber, id, registeredUser;
     return __generator(this, function (_b) {
         switch (_b.label) {
             case 0:
-                _a = req.body, firstName = _a.firstName, lastName = _a.lastName, email = _a.email, username = _a.username, defaultLocation = _a.defaultLocation, address = _a.address, defaultSearchRadius = _a.defaultSearchRadius, _id = _a._id;
-                return [4, User_1.default.findByIdAndUpdate(_id, {
-                        $set: {
-                            firstName: firstName,
-                            lastName: lastName,
-                            email: email,
-                            username: username,
-                            defaultLocation: defaultLocation,
-                            address: address,
-                            defaultSearchRadius: defaultSearchRadius,
-                        },
+                _a = req.body, address = _a.address, defaultSearchRadius = _a.defaultSearchRadius, defaultLocation = _a.defaultLocation, contactNumber = _a.contactNumber, id = _a.id;
+                return [4, User_1.default.findByIdAndUpdate(id, {
+                        $set: { address: address, defaultLocation: defaultLocation, defaultSearchRadius: defaultSearchRadius, contactNumber: contactNumber },
                     })];
             case 1:
-                _b.sent();
-                return [4, User_1.default.findById(_id).select({
-                        defaultLocation: 0,
-                        defaultSearchRadius: 0,
-                        address: 0,
-                    })];
-            case 2:
-                user = _b.sent();
-                if ((user === null || user === void 0 ? void 0 : user.email) && (user === null || user === void 0 ? void 0 : user.username) && (user === null || user === void 0 ? void 0 : user.lastName) && (user === null || user === void 0 ? void 0 : user.firstName)) {
-                    res.status(201).send({ success: true, user: user });
-                }
-                else {
-                    res.status(500).send({ success: false });
-                }
+                registeredUser = _b.sent();
+                res.status(201).send(registeredUser);
+                grpc_client_1.client.saveUserLocation({
+                    userId: registeredUser === null || registeredUser === void 0 ? void 0 : registeredUser._id,
+                    location: defaultLocation,
+                    radius: defaultSearchRadius,
+                }, function (err, data) {
+                    if (err)
+                        console.log("ERROR - " + err);
+                    if (data.success) {
+                        console.log("Registered user " + (registeredUser === null || registeredUser === void 0 ? void 0 : registeredUser._id), data);
+                    }
+                });
                 return [2];
         }
     });
@@ -114,7 +126,7 @@ exports.updateProfile = function (req, res) { return __awaiter(void 0, void 0, v
                 return [4, User_1.default.findById(userId)];
             case 1:
                 user = _b.sent();
-                if (!(name !== (user === null || user === void 0 ? void 0 : user.username))) return [3, 6];
+                if (!(name !== (user === null || user === void 0 ? void 0 : user.name))) return [3, 6];
                 if (!((user === null || user === void 0 ? void 0 : user.lastModified) === '')) return [3, 3];
                 return [4, User_1.default.findByIdAndUpdate(userId, {
                         $set: { name: name, lastModified: moment_1.default().toISOString() },

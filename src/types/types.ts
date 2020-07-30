@@ -3,26 +3,21 @@ import { Document } from 'mongoose';
 import { IncomingHttpHeaders } from 'http';
 
 export interface User extends Document {
-    name: string;
-    email: string;
-    googleId: string;
-    profilePicture: string;
+    _id: string;
+    firstName?: string;
+    lastName?: string;
+    email?: string;
+    username?: string;
+    profilePicture?: string;
     contactNumber: string;
-    address: {
-        addr: string;
-        city: string;
-        state: string;
-        country: string;
-        pincode: number;
-    };
-    cloudinaryPublicId: string;
-    defaultLocation: {
+    address?: string;
+    defaultLocation?: {
         latitude: number;
         longitude: number;
     };
-    defaultSearchRadius: number;
-    lastModified: Date | string;
-    canChangeName: boolean;
+    defaultSearchRadius?: number;
+    lastModified?: string;
+    canChangeName?: boolean;
 }
 
 export interface RequestType extends Document {

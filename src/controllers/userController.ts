@@ -1,7 +1,6 @@
 import { Request, Response } from 'express';
 import User from '../db/models/User';
 import { CustomRequest } from '../types/types';
-import { OAuth2Client } from 'google-auth-library';
 import { uploader } from '../utils/cloudinaryConfig';
 import { resolve } from 'path';
 import { compressImage } from '../utils/compressImage';
@@ -10,53 +9,32 @@ import moment from 'moment';
 import { client } from '../grpc/grpc-client';
 
 interface LoginOrSignUpData {
-    idToken: string;
+    _id: string;
+    contactNumber: string;
 }
 
 interface RegisterUserData {
-    id: string;
-    contactNumber: string;
-    address: {
-        addr: string;
-        city: string;
-        state: string;
-        country: string;
-        pincode: number;
-    };
+    firstName: string;
+    lastName: string;
+    email: string;
+    username: string;
+    address: string;
     defaultLocation: { latitude: number; longitude: number };
     defaultSearchRadius: number;
+    _id: string;
 }
-
-const Gclient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 export const loginOrSignUp = async (
     req: CustomRequest<LoginOrSignUpData, {}>,
     res: Response
 ) => {
-    const { idToken } = req.body;
-
-    const ticket = await Gclient.verifyIdToken({
-        idToken,
-        audience: process.env.GOOGLE_CLIENT_ID!,
-    });
-    const payload = ticket.getPayload();
-    if (payload !== undefined) {
-        const { email, name, picture, sub } = payload;
-        const newUser = {
-            email,
-            name,
-            profilePicture: picture,
-            googleId: sub,
-        };
-        const existingUser = await User.findOne({ email });
-        if (existingUser) {
-            res.status(200).send({ newUser: false, user: existingUser });
-        } else {
-            const user = await User.create(newUser);
-            res.status(201).send({ newUser: true, user });
-        }
+    const { _id } = req.body;
+    const user = await User.findById(_id);
+    if (user) {
+        res.status(200).send({ newUser: false, user });
     } else {
-        res.status(406).send({ error: 'invalid token' });
+        const newUser = await User.create(req.body);
+        res.status(201).send({ newUser: true, user: newUser });
     }
 };
 
@@ -65,29 +43,36 @@ export const registerUser = async (
     res: Response
 ) => {
     const {
+        firstName,
+        lastName,
+        email,
+        username,
+        defaultLocation,
         address,
         defaultSearchRadius,
-        defaultLocation,
-        contactNumber,
-        id,
+        _id,
     } = req.body;
-    const registeredUser = await User.findByIdAndUpdate(id, {
-        $set: { address, defaultLocation, defaultSearchRadius, contactNumber },
-    });
-    res.status(201).send(registeredUser);
-    client.saveUserLocation(
-        {
-            userId: registeredUser?._id,
-            location: defaultLocation,
-            radius: defaultSearchRadius,
+    await User.findByIdAndUpdate(_id, {
+        $set: {
+            firstName,
+            lastName,
+            email,
+            username,
+            defaultLocation,
+            address,
+            defaultSearchRadius,
         },
-        (err: any, data: { success: boolean }) => {
-            if (err) console.log(`ERROR - ${err}`);
-            if (data.success) {
-                console.log(`Registered user ${registeredUser?._id}`, data);
-            }
-        }
-    );
+    });
+    const user = await User.findById(_id).select({
+        defaultLocation: 0,
+        defaultSearchRadius: 0,
+        address: 0,
+    });
+    if (user?.email && user?.username && user?.lastName && user?.firstName) {
+        res.status(201).send({ success: true, user });
+    } else {
+        res.status(500).send({ success: false });
+    }
 };
 
 export const updateProfile = async (req: Request, res: Response) => {
@@ -100,7 +85,7 @@ export const updateProfile = async (req: Request, res: Response) => {
         defaultSearchRadius,
     } = req.file ? JSON.parse(req.body.data) : req.body;
     const user = await User.findById(userId);
-    if (name !== user?.name) {
+    if (name !== user?.username) {
         if (user?.lastModified === '') {
             await User.findByIdAndUpdate(userId, {
                 $set: { name, lastModified: moment().toISOString() },

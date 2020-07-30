@@ -294,7 +294,7 @@ exports.addUserToRespondedBy = function (req, res) { return __awaiter(void 0, vo
                 user = _b.sent();
                 grpc_client_1.client.notifyForResponse({
                     userId: request === null || request === void 0 ? void 0 : request.requestedBy,
-                    nameOfRespondingUser: user === null || user === void 0 ? void 0 : user.username,
+                    nameOfRespondingUser: user === null || user === void 0 ? void 0 : user.name,
                     responseType: 0,
                 }, function (err, data) {
                     if (err)
@@ -326,7 +326,7 @@ exports.acceptUserThatResponded = function (req, res) { return __awaiter(void 0,
                 respondingUser = _b.sent();
                 grpc_client_1.client.notifyForResponse({
                     userId: userId,
-                    nameOfRespondingUser: respondingUser === null || respondingUser === void 0 ? void 0 : respondingUser.username,
+                    nameOfRespondingUser: respondingUser === null || respondingUser === void 0 ? void 0 : respondingUser.name,
                     responseType: 1,
                 }, function (err, data) {
                     if (err)

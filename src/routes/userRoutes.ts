@@ -12,9 +12,7 @@ import authenticateUser from '../middlewares/authenticateUser';
 const userRouter = Router();
 
 userRouter.route('/login').post(asyncHandler(loginOrSignUp));
-userRouter
-    .route('/register')
-    .post(authenticateUser, asyncHandler(registerUser));
+userRouter.route('/register').post(asyncHandler(registerUser));
 userRouter
     .route('/:userId')
     .get(authenticateUser, getUserData)

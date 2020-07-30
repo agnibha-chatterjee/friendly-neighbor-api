@@ -10,7 +10,9 @@ var multerConfig_1 = require("../utils/multerConfig");
 var authenticateUser_1 = __importDefault(require("../middlewares/authenticateUser"));
 var userRouter = express_1.Router();
 userRouter.route('/login').post(express_async_handler_1.default(userController_1.loginOrSignUp));
-userRouter.route('/register').post(express_async_handler_1.default(userController_1.registerUser));
+userRouter
+    .route('/register')
+    .post(authenticateUser_1.default, express_async_handler_1.default(userController_1.registerUser));
 userRouter
     .route('/:userId')
     .get(authenticateUser_1.default, userController_1.getUserData)

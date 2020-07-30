@@ -2,43 +2,41 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 var mongoose_1 = require("mongoose");
 var UserSchema = new mongoose_1.Schema({
-    _id: {
+    name: {
         type: String,
-        required: true,
+        required: [true, 'name is required'],
         trim: true,
-    },
-    firstName: {
-        type: String,
-        trim: true,
-        default: '',
-    },
-    lastName: {
-        type: String,
-        trim: true,
-        default: '',
     },
     email: {
         type: String,
+        required: [true, 'email is required'],
         trim: true,
         unique: true,
     },
-    username: {
+    googleId: {
         type: String,
-        default: '',
+        required: [true, 'googleId is required'],
+        trim: true,
+        unique: true,
     },
     profilePicture: {
         type: String,
         trim: true,
-        default: '',
     },
     contactNumber: {
         type: String,
         trim: true,
-        required: [true, 'contact-number is required'],
-        unique: true,
     },
     address: {
+        addr: { type: String, trim: true },
+        city: { type: String, trim: true },
+        state: { type: String, trim: true },
+        country: { type: String, trim: true },
+        pincode: { type: Number },
+    },
+    cloudinaryPublicId: {
         type: String,
+        trim: true,
     },
     defaultLocation: {
         latitude: {
@@ -55,7 +53,5 @@ var UserSchema = new mongoose_1.Schema({
         type: String,
         default: '',
     },
-}, {
-    _id: false,
 });
 exports.default = mongoose_1.model('user', UserSchema);
