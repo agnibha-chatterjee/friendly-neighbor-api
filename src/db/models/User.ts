@@ -1,65 +1,87 @@
-import { Schema, model } from 'mongoose';
-import { User } from '../../types/types';
+import { Schema, model, Model, Document } from 'mongoose';
+import { Location } from '../../types/types';
 
-const UserSchema = new Schema(
-    {
-        _id: {
-            type: String,
-            required: true,
-            trim: true,
-        },
-        firstName: {
-            type: String,
-            trim: true,
-            default: '',
-        },
-        lastName: {
-            type: String,
-            trim: true,
-            default: '',
-        },
-        email: {
-            type: String,
-            trim: true,
-            unique: true,
-        },
-        username: {
-            type: String,
-            default: '',
-        },
-        profilePicture: {
-            type: String,
-            trim: true,
-            default: '',
-        },
-        contactNumber: {
-            type: String,
-            trim: true,
-            required: [true, 'contact-number is required'],
-            unique: true,
-        },
-        address: {
-            type: String,
-        },
-        defaultLocation: {
-            latitude: {
-                type: Number,
-            },
-            longitude: {
-                type: Number,
-            },
-        },
-        defaultSearchRadius: {
-            type: Number,
-        },
-        lastModified: {
-            type: String,
-            default: '',
-        },
+interface UserAttrs {
+  _id: string;
+}
+
+interface UserDoc extends Document {
+  firstName: string;
+  lastName: string;
+  email: string;
+  username: string;
+  profilePicture: string;
+  contactNumber: string;
+  address: string;
+  defaultLocation: Location;
+  defaultSearchRadius: number;
+  lastModified: string;
+}
+
+interface UserModel extends Model<UserDoc> {
+  build(attrs: UserAttrs): UserDoc;
+}
+
+const userSchema = new Schema({
+  _id: {
+    type: String,
+    required: true,
+    trim: true,
+  },
+  firstName: {
+    type: String,
+    trim: true,
+    default: '',
+  },
+  lastName: {
+    type: String,
+    trim: true,
+    default: '',
+  },
+  email: {
+    type: String,
+    trim: true,
+    unique: true,
+  },
+  username: {
+    type: String,
+    default: '',
+  },
+  profilePicture: {
+    type: String,
+    trim: true,
+    default: '',
+  },
+  contactNumber: {
+    type: String,
+    trim: true,
+    required: [true, 'contact-number is required'],
+    unique: true,
+  },
+  address: {
+    type: String,
+  },
+  defaultLocation: {
+    latitude: {
+      type: Number,
     },
-    {
-        _id: false,
-    }
-);
+    longitude: {
+      type: Number,
+    },
+  },
+  defaultSearchRadius: {
+    type: Number,
+  },
+  lastModified: {
+    type: String,
+    default: '',
+  },
+});
 
-export default model<User>('user', UserSchema);
+userSchema.statics.build = (attrs: UserAttrs) => {
+  return new User({ _id: attrs._id });
+};
+
+const User = model<UserDoc, UserModel>('user', userSchema);
+
+export { User };
