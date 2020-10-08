@@ -6,10 +6,12 @@ import { compressImage } from '../utils/compress-image';
 import { deletePhotos } from '../utils/detele-photos';
 import moment from 'moment';
 import { client } from '../grpc/grpc-client';
+import { NotFoundError } from '../errors/not-found-error';
 
 interface LoginOrSignUpData {
   _id: string;
   contactNumber: string;
+  uuid: string;
 }
 
 interface RegisterUserData {
@@ -23,18 +25,35 @@ interface RegisterUserData {
   _id: string;
 }
 
-export const loginOrSignUp = async (req: Request, res: Response) => {
-  const { _id } = req.body;
+export const loginOrSignUp = async (
+  req: Request<any, any, LoginOrSignUpData>,
+  res: Response
+) => {
+  const { _id, uuid } = req.body;
+  console.log(uuid);
   const user = await User.findById(_id);
   if (user) {
-    res.status(200).send({ newUser: false, user });
+    if (user.uuid && user.uuid !== uuid) {
+      return res
+        .status(200)
+        .send({ newUser: false, user, isAlreadySignedIn: true });
+    }
+    user.set({ uuid });
+    await user.save();
+    res.status(200).send({ newUser: false, user, isAlreadySignedIn: false });
   } else {
-    const newUser = await User.create(req.body);
-    res.status(201).send({ newUser: true, user: newUser });
+    const newUser = User.build(req.body);
+    await newUser.save();
+    res
+      .status(201)
+      .send({ newUser: true, user: newUser, isAlreadySignedIn: false });
   }
 };
 
-export const registerUser = async (req: Request, res: Response) => {
+export const registerUser = async (
+  req: Request<any, any, RegisterUserData>,
+  res: Response
+) => {
   const {
     firstName,
     lastName,
@@ -171,4 +190,17 @@ export const getUserData = async (req: Request, res: Response) => {
       return res.status(200).send({ user, canChangeName: true });
     }
   }
+};
+
+export const signUserOut = async (req: Request, res: Response) => {
+  const { _id } = req.body;
+  const user = await User.findById(_id);
+  if (!user) {
+    throw new NotFoundError();
+  }
+  user.set({
+    uuid: '',
+  });
+  await user.save();
+  res.status(200).send({ success: true });
 };

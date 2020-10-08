@@ -63,9 +63,9 @@ app.use(errorHandler);
 // Error middleware
 
 const PORT = process.env.PORT || 5000;
-const httpServer = http.createServer();
+// const httpServer = http.createServer();
 
-const server = httpServer.listen(PORT, () =>
+const server = app.listen(PORT, () =>
   console.log(`Server is  running on port ${PORT}`)
 );
 
