@@ -5,8 +5,8 @@ import { resolve } from 'path';
 import { compressImage } from '../utils/compress-image';
 import { deletePhotos } from '../utils/detele-photos';
 import moment from 'moment';
-import { client } from '../grpc/grpc-client';
 import { NotFoundError } from '../errors/not-found-error';
+import { saveUserLocation } from '../grpc/grpc-functions/save-user-location';
 
 interface LoginOrSignUpData {
   _id: string;
@@ -162,28 +162,23 @@ export const updateProfile = async (req: Request, res: Response) => {
       }
     );
   }
-  client.saveUserLocation(
-    {
+ saveUserLocation({
       userId: user?._id,
       location: defaultLocation,
       radius: defaultSearchRadius,
-    },
-    (err: string, data: { success: boolean }) => {
-      if (err) console.log(`ERROR - ${err}`);
-      if (data.success) {
-        console.log(`Updated user - ${user?._id}`, data);
-      }
-    }
-  );
+    })
 };
 
 export const getUserData = async (req: Request, res: Response) => {
   const { userId } = req.params;
   const user = await User.findById(userId);
-  if (user?.lastModified === '') {
+  if (!user) {
+    throw new NotFoundError();
+  }
+  if (user.lastModified === '') {
     return res.status(200).send({ user, canChangeName: true });
   } else {
-    const daysSinceLastEdit = moment().diff(moment(user?.lastModified), 'days');
+    const daysSinceLastEdit = moment().diff(moment(user.lastModified), 'days');
     if (daysSinceLastEdit < 365) {
       return res.status(200).send({ user, canChangeName: false });
     } else {

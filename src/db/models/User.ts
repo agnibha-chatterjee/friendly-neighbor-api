@@ -45,7 +45,12 @@ const userSchema = new Schema(
     email: {
       type: String,
       trim: true,
-      unique: true,
+      index: {
+        unique: true,
+        //@ts-ignore
+        partialFilterExpression: { email: { $type: 'string' } },
+      },
+      default: null
     },
     username: {
       type: String,
