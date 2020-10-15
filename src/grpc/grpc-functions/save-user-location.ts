@@ -1,13 +1,13 @@
-import {client} from '../grpc-client'
-
+import { client } from '../grpc-client';
+import { Location } from '../../types/types';
 interface SaveClientData {
-  userId: string
-  location: Location
-  radius: number
+  userId: string;
+  location: Location;
+  radius: number;
 }
 
 export const saveUserLocation = (properties: SaveClientData) => {
-     client.saveUserLocation(
+  client.saveUserLocation(
     {
       userId: properties.userId,
       location: properties.location,
@@ -20,4 +20,4 @@ export const saveUserLocation = (properties: SaveClientData) => {
       }
     }
   );
-}
+};

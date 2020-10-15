@@ -1,5 +1,5 @@
 import mongoose, { Schema, model, Model, Document } from 'mongoose';
-import { RequestType } from '../../types/types';
+import { RequestType, OrderStatus } from '../../types/types';
 
 interface RequestAttrs {
   _id: string;
@@ -19,7 +19,7 @@ interface RequestDoc extends Document {
   cost: number;
   images: string[];
   respondedBy: string[];
-  acceptedRequest: string;
+  acceptedUser: string;
 }
 
 interface RequestModel extends Model<RequestDoc> {
@@ -32,7 +32,7 @@ const requestSchema = new Schema({
     enum: Object.values(RequestType),
   },
   requestedBy: {
-    type: mongoose.Types.ObjectId,
+    type: String,
     required: [true, 'RequestId is required'],
     ref: 'Request',
   },
@@ -65,6 +65,11 @@ const requestSchema = new Schema({
     type: Boolean,
     default: false,
   },
+  orderStatus: {
+    type: String,
+    enum: Object.values(OrderStatus),
+    default: OrderStatus.Created
+  },
   location: {
     latitude: {
       type: Number,
@@ -85,9 +90,9 @@ const requestSchema = new Schema({
     },
   ],
   respondedBy: { type: [String], default: [] },
-  acceptedRequest: {
+  acceptedUser: {
     type: String,
-    ref: 'Request',
+    ref: 'User',
     default: '',
     required: false,
   },

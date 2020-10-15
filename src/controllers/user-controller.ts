@@ -6,7 +6,7 @@ import { compressImage } from '../utils/compress-image';
 import { deletePhotos } from '../utils/detele-photos';
 import moment from 'moment';
 import { NotFoundError } from '../errors/not-found-error';
-import { saveUserLocation } from '../grpc/grpc-functions/save-user-location';
+import { client } from '../grpc/grpc-client';
 
 interface LoginOrSignUpData {
   _id: string;
@@ -64,27 +64,34 @@ export const registerUser = async (
     defaultSearchRadius,
     _id,
   } = req.body;
-  await User.findByIdAndUpdate(_id, {
-    $set: {
-      firstName,
-      lastName,
-      email,
-      username,
-      defaultLocation,
-      address,
-      defaultSearchRadius,
-    },
-  });
-  const user = await User.findById(_id).select({
-    defaultLocation: 0,
-    defaultSearchRadius: 0,
-    address: 0,
-  });
-  if (user?.email && user?.username && user?.lastName && user?.firstName) {
-    res.status(201).send({ success: true, user });
-  } else {
-    res.status(500).send({ success: false });
+  const user = await User.findById(_id);
+  if (!user) {
+    throw new NotFoundError();
   }
+  user.set({
+    firstName,
+    lastName,
+    email,
+    username,
+    defaultLocation,
+    address,
+    defaultSearchRadius,
+  });
+  await user.save();
+  res.status(201).send({ success: true, user });
+  client.saveUserLocation(
+    {
+      userId: user._id,
+      location: user.defaultLocation,
+      radius: user.defaultLocation,
+    },
+    (err: string, data: { success: boolean }) => {
+      if (err) console.log(`ERROR - ${err}`);
+      if (data.success) {
+        console.log(`Updated user - ${user._id}`, data);
+      }
+    }
+  );
 };
 
 export const updateProfile = async (req: Request, res: Response) => {
@@ -162,11 +169,19 @@ export const updateProfile = async (req: Request, res: Response) => {
       }
     );
   }
- saveUserLocation({
+  client.saveUserLocation(
+    {
       userId: user?._id,
-      location: defaultLocation,
-      radius: defaultSearchRadius,
-    })
+      location: user?.defaultLocation,
+      radius: user?.defaultLocation,
+    },
+    (err: string, data: { success: boolean }) => {
+      if (err) console.log(`ERROR - ${err}`);
+      if (data.success) {
+        console.log(`Updated user - ${user?._id}`, data);
+      }
+    }
+  );
 };
 
 export const getUserData = async (req: Request, res: Response) => {

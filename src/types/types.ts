@@ -8,6 +8,12 @@ export enum RequestType {
   Offering = 'offering',
 }
 
+export enum OrderStatus {
+  Created = 'created',
+  Ongoing = 'ongoing',
+  Complete = 'complete'
+}
+
 export type FindNearbyRequestsData = {
   requests: Array<{
     postId: string;

@@ -162,7 +162,7 @@ export const getRequestHistory = async (req: Req, res: Response) => {
         cost,
         requestType,
         completed,
-        acceptedRequest,
+        acceptedUser,
       }) => ({
         respondedBy,
         _id,
@@ -171,7 +171,6 @@ export const getRequestHistory = async (req: Req, res: Response) => {
         title,
         requestType,
         completed,
-        //@ts-ignore
         acceptedUser,
       })
     );
