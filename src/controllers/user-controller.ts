@@ -7,6 +7,8 @@ import { deletePhotos } from '../utils/detele-photos';
 import moment from 'moment';
 import { NotFoundError } from '../errors/not-found-error';
 import { client } from '../grpc/grpc-client';
+import { Request as Req } from '../db/models/request';
+import { OrderStatus } from '../types/types';
 
 interface LoginOrSignUpData {
   _id: string;
@@ -83,7 +85,7 @@ export const registerUser = async (
     {
       userId: user._id,
       location: user.defaultLocation,
-      radius: user.defaultLocation,
+      radius: user.defaultSearchRadius,
     },
     (err: string, data: { success: boolean }) => {
       if (err) console.log(`ERROR - ${err}`);
@@ -96,18 +98,20 @@ export const registerUser = async (
 
 export const updateProfile = async (req: Request, res: Response) => {
   const { userId } = req.params;
+  console.log(req.body);
   const {
-    name,
-    contactNumber,
+    firstName,
+    lastName,
+    username,
     address,
     defaultLocation,
     defaultSearchRadius,
   } = req.file ? JSON.parse(req.body.data) : req.body;
   const user = await User.findById(userId);
-  if (name !== user?.username) {
+  if (firstName !== user?.firstName || lastName !== user?.lastName) {
     if (user?.lastModified === '') {
       await User.findByIdAndUpdate(userId, {
-        $set: { name, lastModified: moment().toISOString() },
+        $set: { firstName, lastName, lastModified: moment().toISOString() },
       });
     } else {
       const daysSinceLastEdit = moment().diff(
@@ -120,7 +124,7 @@ export const updateProfile = async (req: Request, res: Response) => {
         });
       } else {
         await User.findByIdAndUpdate(userId, {
-          $set: { name, lastModified: moment().toISOString() },
+          $set: { firstName, lastName, lastModified: moment().toISOString() },
         });
       }
     }
@@ -128,11 +132,12 @@ export const updateProfile = async (req: Request, res: Response) => {
   if (!req.file) {
     await User.findByIdAndUpdate(userId, {
       $set: {
-        name,
-        contactNumber,
+        firstName,
+        lastName,
         defaultLocation,
         defaultSearchRadius,
         address,
+        username,
       },
     });
     res.status(200).send({ success: true });
@@ -158,11 +163,12 @@ export const updateProfile = async (req: Request, res: Response) => {
           $set: {
             profilePicture: result?.secure_url,
             cloudinaryPublicId: result?.public_id,
-            name,
-            contactNumber,
+            firstName,
+            lastName,
             defaultLocation,
             defaultSearchRadius,
             address,
+            username,
           },
         });
         deletePhotos(resolve(__dirname, `../../uploads/`));
@@ -172,8 +178,8 @@ export const updateProfile = async (req: Request, res: Response) => {
   client.saveUserLocation(
     {
       userId: user?._id,
-      location: user?.defaultLocation,
-      radius: user?.defaultLocation,
+      location: defaultLocation,
+      radius: defaultSearchRadius,
     },
     (err: string, data: { success: boolean }) => {
       if (err) console.log(`ERROR - ${err}`);
@@ -213,4 +219,20 @@ export const signUserOut = async (req: Request, res: Response) => {
   });
   await user.save();
   res.status(200).send({ success: true });
+};
+
+export const getKarmaPointsData = async (req: Request, res: Response) => {
+  const { userId } = req.params;
+  const user = User.findById(userId);
+  const reqsMade = Req.find({ requestedBy: userId });
+  const result = await Promise.all([user, reqsMade]);
+  if (!result[0]) {
+    throw new NotFoundError();
+  }
+  const dataToBeSent = {
+    karmaPoints: result[0].karmaPoints,
+    requestsMade: result[1].length,
+    completedRequests: result[0].completedRequests,
+  };
+  res.send(dataToBeSent);
 };

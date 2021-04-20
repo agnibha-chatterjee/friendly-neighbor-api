@@ -6,6 +6,7 @@ import {
   getUserData,
   updateProfile,
   signUserOut,
+  getKarmaPointsData,
 } from '../controllers/user-controller';
 import { upload } from '../utils/multer-config';
 import authenticateUser from '../middlewares/authenticate-user';
@@ -17,7 +18,9 @@ userRouter.route('/register').post(asyncHandler(registerUser));
 userRouter.post('/logout', asyncHandler(signUserOut));
 userRouter
   .route('/:userId')
-  .get(authenticateUser, getUserData)
-  .put(authenticateUser, upload.single('image'), asyncHandler(updateProfile));
+  .get(getUserData)
+  .put(upload.single('image'), asyncHandler(updateProfile));
+
+userRouter.route('/karma/:userId').get(asyncHandler(getKarmaPointsData));
 
 export { userRouter };

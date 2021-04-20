@@ -19,6 +19,8 @@ interface UserDoc extends Document {
   defaultSearchRadius: number;
   lastModified: string;
   uuid: string;
+  karmaPoints: number;
+  completedRequests: number;
 }
 
 interface UserModel extends Model<UserDoc> {
@@ -50,7 +52,7 @@ const userSchema = new Schema(
         //@ts-ignore
         partialFilterExpression: { email: { $type: 'string' } },
       },
-      default: null
+      default: '',
     },
     username: {
       type: String,
@@ -59,7 +61,7 @@ const userSchema = new Schema(
     profilePicture: {
       type: String,
       trim: true,
-      default: '',
+      default: 'https://via.placeholder.com/300/09f/fff.png',
     },
     contactNumber: {
       type: String,
@@ -88,6 +90,14 @@ const userSchema = new Schema(
     uuid: {
       type: String,
       trim: true,
+    },
+    karmaPoints: {
+      type: Number,
+      default: 100,
+    },
+    completedRequests: {
+      type: Number,
+      default: 0,
     },
   },
   {

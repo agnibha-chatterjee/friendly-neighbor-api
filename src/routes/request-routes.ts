@@ -8,6 +8,8 @@ import {
   addUserToRespondedBy,
   acceptUserThatResponded,
   removeUserThatResponded,
+  fetchOngoingTransactions,
+  completeRequest,
 } from '../controllers/request-controller';
 import { upload } from '../utils/multer-config';
 import authenticateUser from '../middlewares/authenticate-user';
@@ -22,7 +24,6 @@ requestRouter
   .get(authenticateUser, asyncHandler(getRequestHistory));
 
 requestRouter.route('/').post(
-  authenticateUser,
   upload.fields([
     { name: 'image1', maxCount: 1 },
     { name: 'image2', maxCount: 1 },
@@ -31,11 +32,19 @@ requestRouter.route('/').post(
   asyncHandler(createRequest)
 );
 
-requestRouter.route('/:requestId').delete(authenticateUser, deleteRequest);
+requestRouter
+  .route('/:requestId')
+  .post(authenticateUser, asyncHandler(completeRequest))
+  .delete(authenticateUser, deleteRequest);
+
 requestRouter
   .route('/:requestId/respond/:userId')
   .get(authenticateUser, addUserToRespondedBy)
-  .patch(authenticateUser, acceptUserThatResponded)
+  .patch(acceptUserThatResponded)
   .delete(authenticateUser, removeUserThatResponded);
+
+requestRouter
+  .route('/ongoing/:userId')
+  .get(authenticateUser, asyncHandler(fetchOngoingTransactions));
 
 export { requestRouter };

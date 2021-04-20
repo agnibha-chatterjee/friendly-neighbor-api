@@ -10,4 +10,5 @@ export const registerNotification = (req: Request, res: Response) => {
       if (data.success) console.log(`Now sending notifications to ${userId}`);
     }
   );
+  res.send('OK');
 };

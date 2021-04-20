@@ -8,7 +8,12 @@ import { User } from '../db/models/user';
 import { cloudinaryApi } from '../utils/cloudinary-config';
 import moment from 'moment';
 import sortBy from 'lodash.sortby';
-import { FindNearbyRequestsData } from '../types/types';
+import {
+  FindNearbyRequestsData,
+  OrderStatus,
+  RequestType,
+} from '../types/types';
+import { NotFoundError } from '../errors/not-found-error';
 
 export const getFilteredRequests = async (req: Req, res: Response) => {
   const { userId } = req.params;
@@ -25,12 +30,22 @@ export const getFilteredRequests = async (req: Req, res: Response) => {
         return res.status(200).send([]);
       }
       requests.forEach(async ({ postId, distance }, index: number) => {
-        const request = await Request.findOne({
-          _id: postId,
-          completed: false,
-        }).populate({
+        const request = await Request.findOne(
+          {
+            _id: postId,
+            completed: false,
+          },
+          {
+            location: 0,
+            searchRadius: 0,
+            completed: 0,
+            orderStatus: 0,
+            acceptedUser: 0,
+          }
+        ).populate({
           path: 'requestedBy',
-          select: 'name email profilePicture',
+          select:
+            'firstName email profilePicture karmaPoints completedRequests',
         });
         fetchedRequests.push({
           request,
@@ -52,10 +67,21 @@ export const getFilteredRequests = async (req: Req, res: Response) => {
   );
 };
 
+function IsJsonString(str: string) {
+  try {
+    JSON.parse(str);
+  } catch (e) {
+    return false;
+  }
+  return true;
+}
+
 export const createRequest = async (req: Req, res: Response) => {
   let files: Express.Multer.File[] = [];
   const data = req.files ? JSON.parse(req.body.data) : req.body;
-  data['location'] = JSON.parse(data['location']);
+  if (IsJsonString(data['location'])) {
+    data['location'] = JSON.parse(data['location']);
+  }
   data['cost'] = parseInt(data['cost']);
   data['createdAt'] = moment().add(330, 'minutes').toISOString();
   const userId = data['requestedBy'];
@@ -163,6 +189,7 @@ export const getRequestHistory = async (req: Req, res: Response) => {
         requestType,
         completed,
         acceptedUser,
+        orderStatus,
       }) => ({
         respondedBy,
         _id,
@@ -172,6 +199,7 @@ export const getRequestHistory = async (req: Req, res: Response) => {
         requestType,
         completed,
         acceptedUser,
+        orderStatus,
       })
     );
     let finalData: object[] = [];
@@ -185,9 +213,10 @@ export const getRequestHistory = async (req: Req, res: Response) => {
         requestType,
         completed,
         acceptedUser,
+        orderStatus,
       }) => {
         User.find({ _id: { $in: respondedBy } })
-          .select('name email contactNumber profilePicture')
+          .select('firstName email contactNumber profilePicture')
           .exec(function (err, user) {
             if (err)
               return res.status(200).send({
@@ -203,6 +232,7 @@ export const getRequestHistory = async (req: Req, res: Response) => {
                 requestType,
                 acceptedUser,
                 completed,
+                orderStatus,
               },
               users: user,
             });
@@ -246,7 +276,7 @@ export const addUserToRespondedBy = async (req: Req, res: Response) => {
 export const acceptUserThatResponded = async (req: Req, res: Response) => {
   const { userId, requestId } = req.params;
   const updatedRequest = await Request.findByIdAndUpdate(requestId, {
-    $set: { completed: true, acceptedUser: userId },
+    $set: { orderStatus: OrderStatus.Ongoing, acceptedUser: userId },
   });
   res.status(200).send({
     success: true,
@@ -256,14 +286,14 @@ export const acceptUserThatResponded = async (req: Req, res: Response) => {
   client.notifyForResponse(
     {
       userId,
-      nameOfRespondingUser: respondingUser?.username,
+      nameOfRespondingUser: respondingUser?.firstName,
       responseType: 1,
     },
     (err: string, data: { success: true }) => {
       if (err) console.log(`Error - ${err}`);
       if (data.success)
         console.log(
-          `${updatedRequest?.requestedBy} accepted ${userId}'s response. Request ID - ${updatedRequest?._id}`
+          `${updatedRequest?.requestedBy} accepted ${userId}'s offer. Request ID - ${updatedRequest?._id}`
         );
     }
   );
@@ -279,4 +309,46 @@ export const removeUserThatResponded = async (req: Req, res: Response) => {
     success: true,
     message: `successfully declined response of user ${userId}`,
   });
+};
+
+export const fetchOngoingTransactions = async (req: Req, res: Response) => {
+  const { userId } = req.params;
+  const ongoingTransactions = await Request.find(
+    {
+      requestedBy: userId,
+      orderStatus: OrderStatus.Ongoing,
+      completed: false,
+    },
+    { respondedBy: 0, description: 0, images: 0 }
+  ).populate({
+    path: 'acceptedUser',
+    select: 'firstName email profilePicture contactNumber',
+  });
+  res.send(ongoingTransactions);
+};
+
+export const completeRequest = async (req: Req, res: Response) => {
+  const { requestId } = req.params;
+  const request = await Request.findByIdAndUpdate(requestId, {
+    $set: { completed: true, orderStatus: OrderStatus.Complete },
+  });
+  if (!request) {
+    throw new NotFoundError();
+  }
+  res.send({ success: true });
+  if (request.requestType === RequestType.Request) {
+    await User.findByIdAndUpdate(request.requestedBy, {
+      $inc: { karmaPoints: 2, completedRequests: 1 },
+    });
+    await User.findByIdAndUpdate(request.acceptedUser, {
+      $inc: { karmaPoints: 5, completedRequests: 1 },
+    });
+  } else {
+    await User.findByIdAndUpdate(request.requestedBy, {
+      $inc: { karmaPoints: 5, completedRequests: 1 },
+    });
+    await User.findByIdAndUpdate(request.acceptedUser, {
+      $inc: { karmaPoints: 2, completedRequests: 1 },
+    });
+  }
 };

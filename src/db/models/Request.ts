@@ -20,6 +20,7 @@ interface RequestDoc extends Document {
   images: string[];
   respondedBy: string[];
   acceptedUser: string;
+  orderStatus: OrderStatus;
 }
 
 interface RequestModel extends Model<RequestDoc> {
@@ -34,7 +35,7 @@ const requestSchema = new Schema({
   requestedBy: {
     type: String,
     required: [true, 'RequestId is required'],
-    ref: 'Request',
+    ref: 'user',
   },
   title: {
     type: String,
@@ -68,7 +69,7 @@ const requestSchema = new Schema({
   orderStatus: {
     type: String,
     enum: Object.values(OrderStatus),
-    default: OrderStatus.Created
+    default: OrderStatus.Created,
   },
   location: {
     latitude: {
@@ -92,9 +93,9 @@ const requestSchema = new Schema({
   respondedBy: { type: [String], default: [] },
   acceptedUser: {
     type: String,
-    ref: 'User',
     default: '',
     required: false,
+    ref: 'user',
   },
 });
 

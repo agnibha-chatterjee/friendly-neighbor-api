@@ -6,7 +6,9 @@ import express from 'express';
 import 'express-async-errors';
 import morgan from 'morgan';
 import fs from 'fs';
-import https from 'https';
+import compression from 'compression';
+import zlib from 'zlib';
+// import https from 'https';
 import connectDB from './db/connect-db';
 import { initializeCloudinary } from './utils/cloudinary-config';
 import { errorHandler } from './middlewares/error-handler';
@@ -21,25 +23,25 @@ const app = express();
 connectDB();
 initializeCloudinary();
 
-const privateKey = fs.readFileSync(
-  '/etc/letsencrypt/live/fn.twodee.me/privkey.pem',
-  'utf8'
-);
-const certificate = fs.readFileSync(
-  '/etc/letsencrypt/live/fn.twodee.me/cert.pem',
-  'utf8'
-);
-const ca = fs.readFileSync(
-  '/etc/letsencrypt/live/fn.twodee.me/chain.pem',
-  'utf8'
-);
+// const privateKey = fs.readFileSync(
+//   '/etc/letsencrypt/live/fn.twodee.me/privkey.pem',
+//   'utf8'
+// );
+// const certificate = fs.readFileSync(
+//   '/etc/letsencrypt/live/fn.twodee.me/cert.pem',
+//   'utf8'
+// );
+// const ca = fs.readFileSync(
+//   '/etc/letsencrypt/live/fn.twodee.me/chain.pem',
+//   'utf8'
+// );
 
-const credentials = {
-  key: privateKey,
-  cert: certificate,
-  ca: ca,
-};
-
+// const credentials = {
+//   key: privateKey,
+//   cert: certificate,
+//   ca: ca,
+// };
+app.use(compression({ level: 9, memLevel: 9 }));
 app.use(
   morgan(
     ':remote-addr - :remote-user [:date[clf]] ":method :url HTTP/:http-version" :status :res[content-length]'
@@ -63,9 +65,9 @@ app.use(errorHandler);
 // Error middleware
 
 const PORT = process.env.PORT || 5000;
-const httpsServer = https.createServer(credentials, app);
+// const httpsServer = https.createServer(credentials, app);
 
-const server = httpsServer.listen(PORT, () =>
+const server = app.listen(PORT, () =>
   console.log(`Server is  running on port ${PORT}`)
 );
 
